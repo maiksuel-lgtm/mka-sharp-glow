@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { Scissors, LogIn, UserPlus } from 'lucide-react';
 import { z } from 'zod';
+import { getClientSafeError } from '@/lib/errorHandling';
 
 const authSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -64,7 +65,7 @@ export default function ClientAuth() {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
-        toast.error(error.message || 'Erro ao processar requisição');
+        toast.error(getClientSafeError(error));
       }
     } finally {
       setLoading(false);

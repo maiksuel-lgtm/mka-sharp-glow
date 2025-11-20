@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getClientSafeError } from "@/lib/errorHandling";
 import { Button } from "@/components/ui/button";
 import { Scissors, Calendar as CalendarIcon, Clock, Award, Edit, Save, X, LogOut, User, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -77,7 +78,7 @@ export default function MeusDados() {
       setEditedData(formattedData);
       setSelectedDate(new Date(data.booking_date));
     } catch (error: any) {
-      toast.error(error.message || "Erro ao carregar dados");
+      toast.error(getClientSafeError(error));
     }
   };
 
@@ -110,7 +111,7 @@ export default function MeusDados() {
       await loadClientData(user.id);
       setIsEditing(false);
     } catch (error: any) {
-      toast.error(error.message || "Erro ao atualizar dados");
+      toast.error(getClientSafeError(error));
     } finally {
       setIsSaving(false);
     }

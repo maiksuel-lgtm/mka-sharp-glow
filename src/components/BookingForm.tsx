@@ -17,6 +17,7 @@ import { CadastroSuccessAnimation } from "./CadastroSuccessAnimation";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { getClientSafeError } from "@/lib/errorHandling";
 
 const bookingSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(100, "Nome muito longo"),
@@ -131,7 +132,7 @@ export const BookingForm = () => {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
-        toast.error(error.message || "Erro ao criar agendamento");
+        toast.error(getClientSafeError(error));
       }
     } finally {
       setIsSubmitting(false);
