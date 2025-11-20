@@ -40,7 +40,7 @@ export default function AdminLogin() {
 
     setIsCreatingAdmin(true);
     try {
-      // Create user with auto-confirm enabled
+      // Try to sign up first
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -49,10 +49,54 @@ export default function AdminLogin() {
         },
       });
 
-      if (signUpError) throw signUpError;
+      // If user already exists, try to sign in and add admin role
+      if (signUpError && signUpError.message.includes('already registered')) {
+        // Sign in with existing user
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (authData.user) {
-        // Add admin role
+        if (signInError) {
+          throw new Error('Usuário já existe. Por favor, use o login normal ou verifique a senha.');
+        }
+
+        if (signInData.user) {
+          // Check if user already has admin role
+          const { data: existingRole } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', signInData.user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+
+          if (!existingRole) {
+            // Add admin role
+            const { error: roleError } = await supabase
+              .from('user_roles')
+              .insert({ user_id: signInData.user.id, role: 'admin' });
+
+            if (roleError) throw roleError;
+
+            toast({
+              title: 'Admin criado com sucesso!',
+              description: 'Role de admin adicionada. Redirecionando...',
+            });
+          } else {
+            toast({
+              title: 'Você já é admin!',
+              description: 'Redirecionando para o dashboard...',
+            });
+          }
+
+          setTimeout(() => {
+            window.location.href = '/admin/dashboard';
+          }, 1500);
+        }
+      } else if (signUpError) {
+        throw signUpError;
+      } else if (authData.user) {
+        // New user created, add admin role
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({ user_id: authData.user.id, role: 'admin' });
@@ -64,9 +108,7 @@ export default function AdminLogin() {
           description: 'Fazendo login...',
         });
 
-        // Sign in with the new admin account (skip admin check since we just created it)
-        setTimeout(async () => {
-          // Refresh the page to reload auth state
+        setTimeout(() => {
           window.location.href = '/admin/dashboard';
         }, 1500);
       }
