@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { Lock, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getClientSafeError } from '@/lib/errorHandling';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -113,10 +114,10 @@ export default function AdminLogin() {
         }, 1500);
       }
     } catch (error: any) {
-      console.error('Error creating admin:', error);
+      // Use safe error messaging - never expose internal details
       toast({
         title: 'Erro ao criar admin',
-        description: error.message,
+        description: getClientSafeError(error),
         variant: 'destructive',
       });
     } finally {

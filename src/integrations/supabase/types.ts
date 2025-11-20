@@ -20,11 +20,13 @@ export type Database = {
           booking_time: string
           client_name: string
           client_phone: string
+          confirmation_token: string | null
           created_at: string | null
           haircut_style: string
           id: string
           rating: number | null
           status: string | null
+          token_expires_at: string | null
           updated_at: string | null
         }
         Insert: {
@@ -32,11 +34,13 @@ export type Database = {
           booking_time: string
           client_name: string
           client_phone: string
+          confirmation_token?: string | null
           created_at?: string | null
           haircut_style: string
           id?: string
           rating?: number | null
           status?: string | null
+          token_expires_at?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -44,11 +48,13 @@ export type Database = {
           booking_time?: string
           client_name?: string
           client_phone?: string
+          confirmation_token?: string | null
           created_at?: string | null
           haircut_style?: string
           id?: string
           rating?: number | null
           status?: string | null
+          token_expires_at?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -79,12 +85,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_confirmation_token: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      lookup_booking_by_token: {
+        Args: { _phone: string; _token: string }
+        Returns: {
+          booking_date: string
+          booking_time: string
+          client_name: string
+          client_phone: string
+          created_at: string
+          haircut_style: string
+          id: string
+          status: string
+        }[]
       }
     }
     Enums: {
