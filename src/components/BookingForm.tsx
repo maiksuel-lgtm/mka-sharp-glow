@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { HaircutSelector } from "./HaircutSelector";
 import { StarRating } from "./StarRating";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const BookingForm = () => {
   const [name, setName] = useState("");
@@ -42,7 +43,7 @@ export const BookingForm = () => {
     setPhone(formatted);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name || !phone || !date || !time || !selectedCut) {
@@ -52,11 +53,22 @@ export const BookingForm = () => {
 
     setIsSubmitting(true);
     
-    setTimeout(() => {
-      toast.success("Agendamento enviado! A equipe MkA Cortes entrará em contato.", {
+    try {
+      const { error } = await supabase.from('bookings').insert({
+        client_name: name,
+        client_phone: phone,
+        booking_date: format(date, 'yyyy-MM-dd'),
+        booking_time: time,
+        haircut_style: selectedCut,
+        rating: rating > 0 ? rating : null,
+        status: 'pending',
+      });
+
+      if (error) throw error;
+
+      toast.success("Agendamento realizado! Em breve entraremos em contato.", {
         duration: 5000,
       });
-      setIsSubmitting(false);
       
       // Reset form
       setName("");
@@ -64,7 +76,13 @@ export const BookingForm = () => {
       setDate(undefined);
       setTime("");
       setSelectedCut("");
-    }, 1500);
+      setRating(0);
+    } catch (error: any) {
+      console.error('Error creating booking:', error);
+      toast.error("Erro ao criar agendamento. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const containerVariants = {
