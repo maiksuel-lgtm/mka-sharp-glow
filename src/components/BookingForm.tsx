@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { User, Phone, Calendar, Clock, Sparkles } from "lucide-react";
+import { User, Phone, Calendar, Clock, Sparkles, Mail, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -16,13 +16,26 @@ import { BookingLoader } from "./BookingLoader";
 import { CadastroSuccessAnimation } from "./CadastroSuccessAnimation";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getClientSafeError } from "@/lib/errorHandling";
-import { bookingSchema } from "@/lib/validations";
+import { z } from "zod";
+
+const bookingSchema = z.object({
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(100, "Nome muito longo"),
+  phone: z.string()
+    .min(10, "Telefone inválido")
+    .max(15, "Telefone inválido")
+    .regex(/^[\d\s\(\)\-\+]+$/, "Telefone deve conter apenas números e símbolos válidos"),
+  email: z.string().email("Email inválido"),
+  password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+});
 
 export const BookingForm = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    password: "",
+  });
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState("");
   const [selectedCut, setSelectedCut] = useState("");
@@ -47,59 +60,88 @@ export const BookingForm = () => {
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhone(e.target.value);
-    setPhone(formatted);
+    setFormData({ ...formData, phone: formatted });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !phone || !date || !time || !selectedCut) {
-      toast.error("Por favor, preencha todos os campos!");
-      return;
-    }
-
-    // Validate input using zod schema
-    const validationResult = bookingSchema.safeParse({
-      client_name: name.trim(),
-      client_phone: phone,
-      booking_date: format(date, 'yyyy-MM-dd'),
-      booking_time: time,
-      haircut_style: selectedCut,
-      rating: rating >= 1 && rating <= 5 ? rating : null,
-      status: 'pending' as const,
-    });
-
-    if (!validationResult.success) {
-      const firstError = validationResult.error.errors[0];
-      toast.error(firstError.message);
-      return;
-    }
-
-    setIsSubmitting(true);
-    
     try {
-      const bookingData = {
-        client_name: validationResult.data.client_name,
-        client_phone: validationResult.data.client_phone,
-        booking_date: validationResult.data.booking_date,
-        booking_time: validationResult.data.booking_time,
-        haircut_style: validationResult.data.haircut_style,
-        rating: validationResult.data.rating,
-        status: 'pending' as const,
-      };
+      // Validate form data
+      bookingSchema.parse(formData);
+      
+      if (!date || !time || !selectedCut) {
+        toast.error("Por favor, preencha todos os campos obrigatórios");
+        return;
+      }
 
-      const { error } = await supabase.from('bookings').insert(bookingData);
+      setIsSubmitting(true);
 
-      if (error) throw error;
+      const formattedDate = date.toISOString().split('T')[0];
 
-      // Save phone to localStorage for client profile access
-      localStorage.setItem('client_phone', validationResult.data.client_phone);
+      // Create user account or sign in
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            phone: formData.phone,
+          },
+          emailRedirectTo: `${window.location.origin}/meus-dados`,
+        },
+      });
 
-      // Show success animation instead of toast
+      if (authError) {
+        // If user already exists, try to sign in
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (signInError) throw signInError;
+        
+        // Use signed in user
+        const userId = signInData.user?.id;
+        
+        const { error } = await supabase
+          .from('bookings')
+          .insert({
+            client_name: formData.name,
+            client_phone: formData.phone,
+            booking_date: formattedDate,
+            booking_time: time,
+            haircut_style: selectedCut,
+            rating: rating || null,
+            user_id: userId,
+          });
+
+        if (error) throw error;
+      } else {
+        // New user created
+        const userId = authData.user?.id;
+        
+        const { error } = await supabase
+          .from('bookings')
+          .insert({
+            client_name: formData.name,
+            client_phone: formData.phone,
+            booking_date: formattedDate,
+            booking_time: time,
+            haircut_style: selectedCut,
+            rating: rating || null,
+            user_id: userId,
+          });
+
+        if (error) throw error;
+      }
+
       setShowSuccessAnimation(true);
     } catch (error: any) {
-      // Use safe error messaging - never expose internal details
-      toast.error(getClientSafeError(error));
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else {
+        toast.error(error.message || "Erro ao criar agendamento");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -107,11 +149,7 @@ export const BookingForm = () => {
 
   const handleSuccessClose = () => {
     setShowSuccessAnimation(false);
-    
-    // Redirect to profile page
-    setTimeout(() => {
-      navigate('/perfil-pos-cadastro');
-    }, 500);
+    navigate('/meus-dados');
   };
 
   const containerVariants = {
@@ -138,7 +176,7 @@ export const BookingForm = () => {
       <BookingLoader isLoading={isSubmitting} />
       <CadastroSuccessAnimation
         isVisible={showSuccessAnimation}
-        nome={name}
+        nome={formData.name}
         onClose={handleSuccessClose}
       />
       <motion.form
@@ -161,8 +199,8 @@ export const BookingForm = () => {
             <div className="relative">
               <Input
                 id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Digite seu nome completo"
                 className="bg-card border-border focus:border-gold transition-colors pl-4"
               />
@@ -175,11 +213,41 @@ export const BookingForm = () => {
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold/60" />
               <Input
                 id="phone"
-                value={phone}
+                value={formData.phone}
                 onChange={handlePhoneChange}
                 placeholder="(XX) XXXXX-XXXX"
                 className="bg-card border-border focus:border-gold transition-colors pl-10"
                 maxLength={15}
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-foreground/90">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold/60" />
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="seu@email.com"
+                className="bg-card border-border focus:border-gold transition-colors pl-10"
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-foreground/90">Senha</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold/60" />
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Mínimo 6 caracteres"
+                className="bg-card border-border focus:border-gold transition-colors pl-10"
               />
             </div>
           </div>
