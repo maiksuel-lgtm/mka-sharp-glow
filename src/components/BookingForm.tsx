@@ -62,6 +62,7 @@ export const BookingForm = () => {
       booking_time: time,
       haircut_style: selectedCut,
       rating: rating >= 1 && rating <= 5 ? rating : null,
+      status: 'pending' as const,
     });
 
     if (!validationResult.success) {
