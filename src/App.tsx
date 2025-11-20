@@ -8,6 +8,7 @@ import { GlobalLoader } from "@/components/GlobalLoader";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import MeusDados from "./pages/MeusDados";
+import PerfilPosCadastro from "./pages/PerfilPosCadastro";
 import AdminLogin from "./pages/admin/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import TodayClients from "./pages/admin/TodayClients";
@@ -37,6 +38,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/meus-dados" element={<MeusDados />} />
+            <Route path="/perfil-pos-cadastro" element={<PerfilPosCadastro />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               path="/admin/dashboard"
