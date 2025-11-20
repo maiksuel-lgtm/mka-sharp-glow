@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Edit2, Phone, Scissors, Clock, Star, User, ArrowLeft, Check } from "lucide-react";
+import { Edit2, Phone, Scissors, Clock, Star, User, ArrowLeft, Check, Calendar as CalendarIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
@@ -12,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface ClientData {
   id: string;
@@ -81,6 +84,8 @@ const MeusDados = () => {
         client_name: editedData.client_name || clientData.client_name,
         client_phone: editedData.client_phone || clientData.client_phone,
         haircut_style: editedData.haircut_style || clientData.haircut_style,
+        booking_date: editedData.booking_date || clientData.booking_date,
+        booking_time: editedData.booking_time || clientData.booking_time,
       })
       .eq('id', clientData.id);
 
@@ -264,14 +269,78 @@ const MeusDados = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Data e Hora</p>
-                  <p className="text-lg font-medium text-foreground">
-                    {format(new Date(clientData.booking_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                    {" às "}
-                    {clientData.booking_time}
-                  </p>
-                </div>
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-muted-foreground">Data do Agendamento</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal bg-secondary border-gold/30 hover:border-gold",
+                              !editedData.booking_date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4 text-gold" />
+                            {editedData.booking_date ? 
+                              format(new Date(editedData.booking_date), "PPP", { locale: ptBR }) : 
+                              "Selecione uma data"
+                            }
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 bg-card border-gold/20 z-50" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={editedData.booking_date ? new Date(editedData.booking_date) : undefined}
+                            onSelect={(date) => {
+                              if (date) {
+                                setEditedData({ 
+                                  ...editedData, 
+                                  booking_date: format(date, 'yyyy-MM-dd')
+                                });
+                              }
+                            }}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-muted-foreground">Horário</Label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"].map((slot) => (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setEditedData({ ...editedData, booking_time: slot })}
+                            className={cn(
+                              "py-2 px-3 rounded-md text-sm font-medium transition-all",
+                              "border border-border hover:border-gold",
+                              (editedData.booking_time || clientData.booking_time) === slot
+                                ? "bg-gold text-primary-foreground shadow-gold"
+                                : "bg-secondary text-foreground/80 hover:bg-gold/10"
+                            )}
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Data e Hora</p>
+                    <p className="text-lg font-medium text-foreground">
+                      {format(new Date(clientData.booking_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      {" às "}
+                      {clientData.booking_time}
+                    </p>
+                  </div>
+                )}
                 {clientData.rating && (
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-gold fill-gold" />
