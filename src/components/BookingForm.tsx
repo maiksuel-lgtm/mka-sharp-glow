@@ -52,18 +52,26 @@ export const BookingForm = () => {
       return;
     }
 
+    // Validate rating if provided
+    if (rating > 0 && (rating < 1 || rating > 5)) {
+      toast.error("Avaliação deve estar entre 1 e 5 estrelas");
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase.from('bookings').insert({
+      const bookingData = {
         client_name: name,
         client_phone: phone,
         booking_date: format(date, 'yyyy-MM-dd'),
         booking_time: time,
         haircut_style: selectedCut,
-        rating: rating > 0 ? rating : null,
-        status: 'pending',
-      });
+        rating: rating >= 1 && rating <= 5 ? rating : null,
+        status: 'pending' as const,
+      };
+
+      const { error } = await supabase.from('bookings').insert(bookingData);
 
       if (error) throw error;
 
