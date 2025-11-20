@@ -64,10 +64,11 @@ export default function AdminLogin() {
           description: 'Fazendo login...',
         });
 
-        // Sign in with the new admin account
-        setTimeout(() => {
-          signIn(email, password);
-        }, 1000);
+        // Sign in with the new admin account (skip admin check since we just created it)
+        setTimeout(async () => {
+          // Refresh the page to reload auth state
+          window.location.href = '/admin/dashboard';
+        }, 1500);
       }
     } catch (error: any) {
       console.error('Error creating admin:', error);
