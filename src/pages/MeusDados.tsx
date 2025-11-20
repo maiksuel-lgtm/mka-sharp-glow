@@ -81,8 +81,6 @@ const MeusDados = () => {
     const { error } = await supabase
       .from('bookings')
       .update({
-        client_name: editedData.client_name || clientData.client_name,
-        client_phone: editedData.client_phone || clientData.client_phone,
         haircut_style: editedData.haircut_style || clientData.haircut_style,
         booking_date: editedData.booking_date || clientData.booking_date,
         booking_time: editedData.booking_time || clientData.booking_time,
@@ -100,19 +98,14 @@ const MeusDados = () => {
       return;
     }
 
-    // Update localStorage if phone changed
-    if (editedData.client_phone) {
-      localStorage.setItem('client_phone', editedData.client_phone);
-    }
-
     setClientData({ ...clientData, ...editedData });
     setIsEditing(false);
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 2000);
 
     toast({
-      title: "Dados atualizados!",
-      description: "Suas informações foram salvas com sucesso",
+      title: "Agendamento atualizado!",
+      description: "Seu agendamento foi alterado com sucesso",
     });
   };
 
@@ -170,7 +163,7 @@ const MeusDados = () => {
                 className="bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
               >
                 <Edit2 className="mr-2 h-4 w-4" />
-                Editar Dados
+                Editar Agendamento
               </Button>
             )}
           </div>
@@ -215,42 +208,17 @@ const MeusDados = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {isEditing ? (
-                  <>
-                    <div>
-                      <Label htmlFor="name" className="text-muted-foreground">Nome</Label>
-                      <Input
-                        id="name"
-                        value={editedData.client_name || clientData.client_name}
-                        onChange={(e) => setEditedData({ ...editedData, client_name: e.target.value })}
-                        className="mt-1 bg-secondary border-gold/30 focus:border-gold"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone" className="text-muted-foreground">Telefone</Label>
-                      <Input
-                        id="phone"
-                        value={editedData.client_phone || clientData.client_phone}
-                        onChange={(e) => setEditedData({ ...editedData, client_phone: e.target.value })}
-                        className="mt-1 bg-secondary border-gold/30 focus:border-gold"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Nome</p>
-                      <p className="text-lg font-medium text-foreground">{clientData.client_name}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-gold" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Telefone</p>
-                        <p className="text-lg font-medium text-foreground">{clientData.client_phone}</p>
-                      </div>
-                    </div>
-                  </>
-                )}
+                <div>
+                  <p className="text-sm text-muted-foreground">Nome</p>
+                  <p className="text-lg font-medium text-foreground">{clientData.client_name}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-gold" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Telefone</p>
+                    <p className="text-lg font-medium text-foreground">{clientData.client_phone}</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
