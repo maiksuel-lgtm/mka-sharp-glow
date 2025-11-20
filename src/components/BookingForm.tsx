@@ -11,6 +11,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { HaircutSelector } from "./HaircutSelector";
 import { StarRating } from "./StarRating";
+import { BookingLoader } from "./BookingLoader";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -105,13 +106,15 @@ export const BookingForm = () => {
   };
 
   return (
-    <motion.form
-      onSubmit={handleSubmit}
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="w-full max-w-4xl mx-auto space-y-8"
-    >
+    <>
+      <BookingLoader isLoading={isSubmitting} />
+      <motion.form
+        onSubmit={handleSubmit}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-4xl mx-auto space-y-8"
+      >
       {/* Client Information */}
       <motion.div variants={itemVariants} className="space-y-6">
         <h2 className="text-2xl font-display font-bold text-gold flex items-center gap-3">
@@ -238,5 +241,6 @@ export const BookingForm = () => {
         </Button>
       </motion.div>
     </motion.form>
+    </>
   );
 };
