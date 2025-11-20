@@ -90,6 +90,9 @@ export const BookingForm = () => {
 
       if (error) throw error;
 
+      // Save phone to localStorage for client profile access
+      localStorage.setItem('client_phone', validationResult.data.client_phone);
+
       // Show success animation instead of toast
       setShowSuccessAnimation(true);
     } catch (error: any) {
