@@ -178,7 +178,7 @@ export default function AdminLogin() {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-gold hover:opacity-90 transition-opacity"
+              className="w-full bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
               disabled={loading}
             >
               {loading ? 'Entrando...' : 'Entrar'}
@@ -192,7 +192,7 @@ export default function AdminLogin() {
             <Button
               type="button"
               variant="outline"
-              className="w-full"
+              className="w-full border-gold/50 hover:bg-gold/10 hover:border-gold text-gold transition-all"
               onClick={handleCreateFirstAdmin}
               disabled={isCreatingAdmin || loading}
             >
