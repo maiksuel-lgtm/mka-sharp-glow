@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { User, Phone, Calendar, Clock, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import { getClientSafeError } from "@/lib/errorHandling";
 import { bookingSchema } from "@/lib/validations";
 
 export const BookingForm = () => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [date, setDate] = useState<Date>();
@@ -106,13 +108,10 @@ export const BookingForm = () => {
   const handleSuccessClose = () => {
     setShowSuccessAnimation(false);
     
-    // Reset form
-    setName("");
-    setPhone("");
-    setDate(undefined);
-    setTime("");
-    setSelectedCut("");
-    setRating(0);
+    // Redirect to profile page
+    setTimeout(() => {
+      navigate('/perfil-pos-cadastro');
+    }, 500);
   };
 
   const containerVariants = {
