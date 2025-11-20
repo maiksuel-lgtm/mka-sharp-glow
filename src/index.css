@@ -75,6 +75,14 @@ All colors MUST be HSL.
     background-color: hsl(var(--gold));
   }
   
+  .bg-gold-light {
+    background-color: hsl(var(--gold-light));
+  }
+  
+  .bg-gold-dark {
+    background-color: hsl(var(--gold-dark));
+  }
+  
   .border-gold {
     border-color: hsl(var(--gold));
   }
@@ -87,7 +95,7 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-gold-lg);
   }
   
-  .gradient-gold {
+  .bg-gradient-gold {
     background: var(--gradient-gold);
   }
   
