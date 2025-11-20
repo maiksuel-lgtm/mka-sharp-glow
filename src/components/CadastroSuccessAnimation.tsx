@@ -175,19 +175,14 @@ export const CadastroSuccessAnimation = ({
               <Button
                 onClick={onClose}
                 size="lg"
-                className="relative overflow-hidden group bg-gradient-gold hover:shadow-gold-lg transition-all duration-300 text-background font-semibold px-8 py-6 text-lg"
+                className="bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all duration-300 font-semibold px-8 py-6 text-lg hover:scale-105"
               >
                 <motion.span
-                  className="relative z-10"
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
-                  Ir para o Painel
+                  Ver Meu Perfil
                 </motion.span>
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-gold-light to-gold-dark opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  initial={false}
-                />
               </Button>
             </motion.div>
           </motion.div>
