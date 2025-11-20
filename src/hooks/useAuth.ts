@@ -69,7 +69,7 @@ export const useAuth = () => {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, skipAdminCheck = false) => {
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -79,8 +79,8 @@ export const useAuth = () => {
 
       if (error) throw error;
 
-      // Check if user is admin
-      if (data.user) {
+      // Check if user is admin (skip during first admin creation)
+      if (data.user && !skipAdminCheck) {
         const { data: roleData } = await supabase
           .from('user_roles')
           .select('role')
