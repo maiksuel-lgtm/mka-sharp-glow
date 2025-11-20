@@ -23,7 +23,7 @@ const Index = () => {
           >
             <Button
               onClick={() => navigate('/meus-dados')}
-              className="bg-gradient-gold text-primary-foreground hover:opacity-90 shadow-gold"
+              className="bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
             >
               <User className="mr-2 h-4 w-4" />
               Meu Perfil
