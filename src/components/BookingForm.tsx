@@ -84,17 +84,12 @@ export const BookingForm = () => {
         status: 'pending' as const,
       };
 
-      const { data, error } = await supabase.from('bookings').insert(bookingData).select('confirmation_token').single();
+      const { error } = await supabase.from('bookings').insert(bookingData);
 
       if (error) throw error;
 
-      // Show success with confirmation token
-      const confirmationMessage = data?.confirmation_token 
-        ? `Agendamento realizado! Seu código de confirmação é: ${data.confirmation_token}. Guarde-o para consultar seu agendamento.`
-        : "Agendamento realizado! Em breve entraremos em contato.";
-      
-      toast.success(confirmationMessage, {
-        duration: 10000,
+      toast.success("Agendamento realizado com sucesso! Em breve entraremos em contato.", {
+        duration: 5000,
       });
       
       // Reset form

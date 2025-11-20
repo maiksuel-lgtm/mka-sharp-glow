@@ -1,9 +1,7 @@
 import { motion } from "framer-motion";
-import { Sparkles, Search } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
-import { NavLink } from "@/components/NavLink";
-import { Button } from "@/components/ui/button";
 
 const Index = () => {
   return (
@@ -49,21 +47,6 @@ const Index = () => {
 
         {/* Booking Form */}
         <BookingForm />
-
-        {/* Booking Lookup Link */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-8 text-center"
-        >
-          <NavLink to="/booking-status">
-            <Button variant="outline" className="gap-2">
-              <Search className="h-4 w-4" />
-              Consultar Meu Agendamento
-            </Button>
-          </NavLink>
-        </motion.div>
 
         {/* Footer */}
         <motion.footer
