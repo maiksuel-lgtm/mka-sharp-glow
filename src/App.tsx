@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GlobalLoader } from "@/components/GlobalLoader";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import BookingStatus from "./pages/BookingStatus";
 import AdminLogin from "./pages/admin/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import TodayClients from "./pages/admin/TodayClients";
@@ -35,6 +36,7 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/booking-status" element={<BookingStatus />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               path="/admin/dashboard"

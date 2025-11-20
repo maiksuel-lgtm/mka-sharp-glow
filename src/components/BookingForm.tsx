@@ -14,6 +14,7 @@ import { StarRating } from "./StarRating";
 import { BookingLoader } from "./BookingLoader";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getClientSafeError } from "@/lib/errorHandling";
 
 export const BookingForm = () => {
   const [name, setName] = useState("");
@@ -71,12 +72,17 @@ export const BookingForm = () => {
         status: 'pending' as const,
       };
 
-      const { error } = await supabase.from('bookings').insert(bookingData);
+      const { data, error } = await supabase.from('bookings').insert(bookingData).select('confirmation_token').single();
 
       if (error) throw error;
 
-      toast.success("Agendamento realizado! Em breve entraremos em contato.", {
-        duration: 5000,
+      // Show success with confirmation token
+      const confirmationMessage = data?.confirmation_token 
+        ? `Agendamento realizado! Seu código de confirmação é: ${data.confirmation_token}. Guarde-o para consultar seu agendamento.`
+        : "Agendamento realizado! Em breve entraremos em contato.";
+      
+      toast.success(confirmationMessage, {
+        duration: 10000,
       });
       
       // Reset form
@@ -87,8 +93,8 @@ export const BookingForm = () => {
       setSelectedCut("");
       setRating(0);
     } catch (error: any) {
-      console.error('Error creating booking:', error);
-      toast.error("Erro ao criar agendamento. Tente novamente.");
+      // Use safe error messaging - never expose internal details
+      toast.error(getClientSafeError(error));
     } finally {
       setIsSubmitting(false);
     }
