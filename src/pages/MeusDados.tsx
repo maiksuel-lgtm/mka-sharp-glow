@@ -162,7 +162,7 @@ const MeusDados = () => {
             {!isEditing && (
               <Button
                 onClick={() => setIsEditing(true)}
-                className="bg-gradient-gold text-primary-foreground hover:opacity-90 shadow-gold"
+                className="bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
               >
                 <Edit2 className="mr-2 h-4 w-4" />
                 Editar Dados
@@ -329,14 +329,14 @@ const MeusDados = () => {
               variant="outline"
               onClick={handleCancel}
               disabled={isSaving}
-              className="border-gold/30 text-foreground hover:bg-gold/10"
+              className="border-gold/50 hover:bg-gold/10 hover:border-gold text-gold transition-all"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="bg-gradient-gold text-primary-foreground hover:opacity-90 shadow-gold"
+              className="bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
             >
               {isSaving ? (
                 <motion.div
