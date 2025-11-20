@@ -1,116 +1,124 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Edit2, Phone, Scissors, Clock, Star, User, ArrowLeft, Check, Calendar as CalendarIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Scissors, Calendar as CalendarIcon, Clock, Award, Edit, Save, X, LogOut, User, Phone } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { HaircutSelector } from "@/components/HaircutSelector";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { BackgroundEffects } from "@/components/BackgroundEffects";
-import { HaircutSelector } from "@/components/HaircutSelector";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { BackgroundEffects } from "@/components/BackgroundEffects";
 
 interface ClientData {
-  id: string;
-  client_name: string;
-  client_phone: string;
-  haircut_style: string;
-  booking_date: string;
-  booking_time: string;
-  rating: number | null;
+  name: string;
+  phone: string;
+  haircutStyle: string;
+  bookingDate: string;
+  bookingTime: string;
+  rating: number;
 }
 
-const MeusDados = () => {
+export default function MeusDados() {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const [user, setUser] = useState<any>(null);
   const [clientData, setClientData] = useState<ClientData | null>(null);
+  const [editedData, setEditedData] = useState<Partial<ClientData>>({});
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [editedData, setEditedData] = useState<Partial<ClientData>>({});
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>();
 
-  // Load client data - For now using phone from localStorage
   useEffect(() => {
-    loadClientData();
+    checkUser();
   }, []);
 
-  const loadClientData = async () => {
-    const phone = localStorage.getItem('client_phone');
-    if (!phone) {
-      toast({
-        title: "Nenhum agendamento encontrado",
-        description: "Faça um agendamento primeiro",
-        variant: "destructive",
-      });
-      navigate('/');
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate('/auth');
       return;
     }
+    setUser(user);
+    loadClientData(user.id);
+  };
 
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('client_phone', phone)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+  const loadClientData = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
-    if (error || !data) {
-      toast({
-        title: "Erro ao carregar dados",
-        description: "Não foi possível encontrar seus dados",
-        variant: "destructive",
-      });
-      navigate('/');
-      return;
+      if (error) throw error;
+
+      if (!data) {
+        toast.error("Nenhum agendamento encontrado");
+        navigate('/');
+        return;
+      }
+
+      const formattedData: ClientData = {
+        name: data.client_name,
+        phone: data.client_phone,
+        haircutStyle: data.haircut_style,
+        bookingDate: data.booking_date,
+        bookingTime: data.booking_time,
+        rating: data.rating || 0,
+      };
+
+      setClientData(formattedData);
+      setEditedData(formattedData);
+      setSelectedDate(new Date(data.booking_date));
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao carregar dados");
     }
+  };
 
-    setClientData(data);
-    setEditedData(data);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
   };
 
   const handleSave = async () => {
-    if (!clientData) return;
+    if (!clientData || !user) return;
 
     setIsSaving(true);
-    const { error } = await supabase
-      .from('bookings')
-      .update({
-        haircut_style: editedData.haircut_style || clientData.haircut_style,
-        booking_date: editedData.booking_date || clientData.booking_date,
-        booking_time: editedData.booking_time || clientData.booking_time,
-      })
-      .eq('id', clientData.id);
+    try {
+      const formattedDate = selectedDate?.toISOString().split('T')[0];
+      
+      const { error } = await supabase
+        .from('bookings')
+        .update({
+          haircut_style: editedData.haircutStyle,
+          booking_date: formattedDate,
+          booking_time: editedData.bookingTime,
+        })
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-    setIsSaving(false);
+      if (error) throw error;
 
-    if (error) {
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar as alterações",
-        variant: "destructive",
-      });
-      return;
+      toast.success("Agendamento atualizado com sucesso!");
+      await loadClientData(user.id);
+      setIsEditing(false);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao atualizar dados");
+    } finally {
+      setIsSaving(false);
     }
-
-    setClientData({ ...clientData, ...editedData });
-    setIsEditing(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2000);
-
-    toast({
-      title: "Agendamento atualizado!",
-      description: "Seu agendamento foi alterado com sucesso",
-    });
   };
 
   const handleCancel = () => {
     setEditedData(clientData || {});
+    setSelectedDate(clientData ? new Date(clientData.bookingDate) : undefined);
     setIsEditing(false);
   };
 
@@ -127,79 +135,33 @@ const MeusDados = () => {
     );
   }
 
+  const timeSlots = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
+
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-background relative">
       <BackgroundEffects />
-
-      <div className="relative z-10 container mx-auto px-4 py-8 md:py-12 max-w-4xl">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="mb-4 text-gold hover:text-gold-light hover:bg-gold/10"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-display font-bold text-gold">
-                Meus Dados
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Visualize e edite suas informações
-              </p>
-            </div>
-
-            {!isEditing && (
-              <Button
-                onClick={() => setIsEditing(true)}
-                className="bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
-              >
-                <Edit2 className="mr-2 h-4 w-4" />
-                Editar Agendamento
-              </Button>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Success Animation */}
-        <AnimatePresence>
-          {showSuccess && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: -20 }}
-              className="fixed top-8 right-8 z-50 bg-card border border-gold rounded-lg p-4 shadow-gold-lg"
-            >
-              <div className="flex items-center gap-3">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", delay: 0.2 }}
-                >
-                  <Check className="w-6 h-6 text-gold" />
-                </motion.div>
-                <span className="text-foreground font-medium">Dados salvos com sucesso!</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Data Cards */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Personal Info Card */}
+      
+      <div className="relative z-10 container mx-auto px-4 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto space-y-6">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center space-y-2"
           >
+            <div className="flex justify-between items-center mb-4">
+              <h1 className="text-4xl font-bold text-gold">Meus Dados</h1>
+              <Button variant="outline" onClick={handleLogout} className="border-gold/50 text-gold hover:bg-gold/10">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
+            <p className="text-muted-foreground">
+              Visualize e edite suas informações
+            </p>
+          </motion.div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Personal Info Card */}
             <Card className="bg-card border-gold/20 shadow-gold">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gold">
@@ -210,25 +172,19 @@ const MeusDados = () => {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Nome</p>
-                  <p className="text-lg font-medium text-foreground">{clientData.client_name}</p>
+                  <p className="text-lg font-medium text-foreground">{clientData.name}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-gold" />
                   <div>
                     <p className="text-sm text-muted-foreground">Telefone</p>
-                    <p className="text-lg font-medium text-foreground">{clientData.client_phone}</p>
+                    <p className="text-lg font-medium text-foreground">{clientData.phone}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
 
-          {/* Booking Info Card */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+            {/* Booking Info Card */}
             <Card className="bg-card border-gold/20 shadow-gold">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gold">
@@ -239,97 +195,72 @@ const MeusDados = () => {
               <CardContent className="space-y-4">
                 {isEditing ? (
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-muted-foreground">Data do Agendamento</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal bg-secondary border-gold/30 hover:border-gold",
-                              !editedData.booking_date && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4 text-gold" />
-                            {editedData.booking_date ? 
-                              format(new Date(editedData.booking_date), "PPP", { locale: ptBR }) : 
-                              "Selecione uma data"
-                            }
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-card border-gold/20 z-50" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={editedData.booking_date ? new Date(editedData.booking_date) : undefined}
-                            onSelect={(date) => {
-                              if (date) {
-                                setEditedData({ 
-                                  ...editedData, 
-                                  booking_date: format(date, 'yyyy-MM-dd')
-                                });
-                              }
-                            }}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !selectedDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {selectedDate ? format(selectedDate, "PPP", { locale: ptBR }) : "Selecione uma data"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={setSelectedDate}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
 
-                    <div className="space-y-2">
-                      <Label className="text-muted-foreground">Horário</Label>
-                      <div className="grid grid-cols-4 gap-2">
-                        {["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"].map((slot) => (
-                          <button
-                            key={slot}
-                            type="button"
-                            onClick={() => setEditedData({ ...editedData, booking_time: slot })}
-                            className={cn(
-                              "py-2 px-3 rounded-md text-sm font-medium transition-all",
-                              "border border-border hover:border-gold",
-                              (editedData.booking_time || clientData.booking_time) === slot
-                                ? "bg-gold text-primary-foreground shadow-gold"
-                                : "bg-secondary text-foreground/80 hover:bg-gold/10"
-                            )}
-                          >
-                            {slot}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {timeSlots.map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => setEditedData({ ...editedData, bookingTime: slot })}
+                          className={cn(
+                            "py-2 px-3 rounded-md text-sm font-medium transition-all border",
+                            (editedData.bookingTime || clientData.bookingTime) === slot
+                              ? "bg-gold text-primary-foreground"
+                              : "bg-secondary hover:bg-gold/10"
+                          )}
+                        >
+                          {slot}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 ) : (
                   <div>
                     <p className="text-sm text-muted-foreground">Data e Hora</p>
                     <p className="text-lg font-medium text-foreground">
-                      {format(new Date(clientData.booking_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      {format(new Date(clientData.bookingDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                       {" às "}
-                      {clientData.booking_time}
+                      {clientData.bookingTime}
                     </p>
                   </div>
                 )}
-                {clientData.rating && (
+                {clientData.rating > 0 && (
                   <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-gold fill-gold" />
+                    <Award className="w-4 h-4 text-gold" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Sua Avaliação</p>
+                      <p className="text-sm text-muted-foreground">Avaliação</p>
                       <p className="text-lg font-medium text-foreground">{clientData.rating} estrelas</p>
                     </div>
                   </div>
                 )}
               </CardContent>
             </Card>
-          </motion.div>
-        </div>
+          </div>
 
-        {/* Haircut Style Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-6"
-        >
+          {/* Haircut Style Card */}
           <Card className="bg-card border-gold/20 shadow-gold">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-gold">
@@ -340,58 +271,41 @@ const MeusDados = () => {
             <CardContent>
               {isEditing ? (
                 <HaircutSelector
-                  selectedCut={editedData.haircut_style || clientData.haircut_style}
-                  onSelect={(style) => setEditedData({ ...editedData, haircut_style: style })}
+                  selectedCut={editedData.haircutStyle || clientData.haircutStyle}
+                  onSelect={(style) => setEditedData({ ...editedData, haircutStyle: style })}
                 />
               ) : (
                 <div className="p-6 bg-secondary rounded-lg border border-gold/20 text-center">
                   <p className="text-2xl font-display font-bold text-gold">
-                    {clientData.haircut_style}
+                    {clientData.haircutStyle}
                   </p>
                 </div>
               )}
             </CardContent>
           </Card>
-        </motion.div>
 
-        {/* Action Buttons */}
-        {isEditing && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mt-8 flex gap-4 justify-end"
-          >
-            <Button
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSaving}
-              className="border-gold/50 hover:bg-gold/10 hover:border-gold text-gold transition-all"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
-            >
-              {isSaving ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                >
-                  <Scissors className="w-4 h-4 mr-2" />
-                </motion.div>
-              ) : (
-                <Check className="w-4 h-4 mr-2" />
-              )}
-              Salvar Alterações
-            </Button>
-          </motion.div>
-        )}
+          {/* Action Buttons */}
+          <div className="flex gap-4 justify-end">
+            {isEditing ? (
+              <>
+                <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button onClick={handleSave} disabled={isSaving} className="bg-gold hover:bg-gold-light text-primary-foreground">
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSaving ? "Salvando..." : "Salvar"}
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => setIsEditing(true)} className="bg-gold hover:bg-gold-light text-primary-foreground">
+                <Edit className="h-4 w-4 mr-2" />
+                Editar Agendamento
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
-export default MeusDados;
+}
