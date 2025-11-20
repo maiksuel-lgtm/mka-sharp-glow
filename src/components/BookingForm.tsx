@@ -15,6 +15,7 @@ import { BookingLoader } from "./BookingLoader";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getClientSafeError } from "@/lib/errorHandling";
+import { bookingSchema } from "@/lib/validations";
 
 export const BookingForm = () => {
   const [name, setName] = useState("");
@@ -53,9 +54,19 @@ export const BookingForm = () => {
       return;
     }
 
-    // Validate rating if provided
-    if (rating > 0 && (rating < 1 || rating > 5)) {
-      toast.error("Avaliação deve estar entre 1 e 5 estrelas");
+    // Validate input using zod schema
+    const validationResult = bookingSchema.safeParse({
+      client_name: name.trim(),
+      client_phone: phone,
+      booking_date: format(date, 'yyyy-MM-dd'),
+      booking_time: time,
+      haircut_style: selectedCut,
+      rating: rating >= 1 && rating <= 5 ? rating : null,
+    });
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
@@ -63,12 +74,12 @@ export const BookingForm = () => {
     
     try {
       const bookingData = {
-        client_name: name,
-        client_phone: phone,
-        booking_date: format(date, 'yyyy-MM-dd'),
-        booking_time: time,
-        haircut_style: selectedCut,
-        rating: rating >= 1 && rating <= 5 ? rating : null,
+        client_name: validationResult.data.client_name,
+        client_phone: validationResult.data.client_phone,
+        booking_date: validationResult.data.booking_date,
+        booking_time: validationResult.data.booking_time,
+        haircut_style: validationResult.data.haircut_style,
+        rating: validationResult.data.rating,
         status: 'pending' as const,
       };
 
