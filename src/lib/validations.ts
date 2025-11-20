@@ -11,7 +11,7 @@ export const bookingSchema = z.object({
   booking_date: z.string().min(1, 'Data é obrigatória'),
   booking_time: z.string().min(1, 'Horário é obrigatório'),
   haircut_style: z.string().min(1, 'Estilo de corte é obrigatório'),
-  rating: z.number().min(1).max(5).optional(),
+  rating: z.number().min(1).max(5).nullable().optional(),
   status: z.enum(['pending', 'arrived', 'completed', 'cancelled']),
 });
 
