@@ -79,8 +79,9 @@ export const BookingForm = () => {
 
       const formattedDate = date.toISOString().split('T')[0];
 
-      // Create user account or sign in
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Try to sign up first
+      let userId: string | undefined;
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -91,49 +92,39 @@ export const BookingForm = () => {
         },
       });
 
-      if (authError) {
+      if (signUpError) {
         // If user already exists, try to sign in
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
+        if (signUpError.message.includes('already registered')) {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
+
+          if (signInError) throw signInError;
+          userId = signInData.user?.id;
+        } else {
+          throw signUpError;
+        }
+      } else {
+        userId = signUpData.user?.id;
+      }
+
+      if (!userId) throw new Error('Erro ao autenticar usuário');
+
+      // Create booking
+      const { error: bookingError } = await supabase
+        .from('bookings')
+        .insert({
+          client_name: formData.name,
+          client_phone: formData.phone,
+          booking_date: formattedDate,
+          booking_time: time,
+          haircut_style: selectedCut,
+          rating: rating || null,
+          user_id: userId,
         });
 
-        if (signInError) throw signInError;
-        
-        // Use signed in user
-        const userId = signInData.user?.id;
-        
-        const { error } = await supabase
-          .from('bookings')
-          .insert({
-            client_name: formData.name,
-            client_phone: formData.phone,
-            booking_date: formattedDate,
-            booking_time: time,
-            haircut_style: selectedCut,
-            rating: rating || null,
-            user_id: userId,
-          });
-
-        if (error) throw error;
-      } else {
-        // New user created
-        const userId = authData.user?.id;
-        
-        const { error } = await supabase
-          .from('bookings')
-          .insert({
-            client_name: formData.name,
-            client_phone: formData.phone,
-            booking_date: formattedDate,
-            booking_time: time,
-            haircut_style: selectedCut,
-            rating: rating || null,
-            user_id: userId,
-          });
-
-        if (error) throw error;
-      }
+      if (bookingError) throw bookingError;
 
       setShowSuccessAnimation(true);
     } catch (error: any) {
