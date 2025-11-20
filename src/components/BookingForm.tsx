@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { HaircutSelector } from "./HaircutSelector";
 import { StarRating } from "./StarRating";
 import { BookingLoader } from "./BookingLoader";
+import { CadastroSuccessAnimation } from "./CadastroSuccessAnimation";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getClientSafeError } from "@/lib/errorHandling";
@@ -25,6 +26,7 @@ export const BookingForm = () => {
   const [selectedCut, setSelectedCut] = useState("");
   const [rating, setRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
   const timeSlots = [
     "09:00", "10:00", "11:00", "12:00", "13:00", 
@@ -88,23 +90,26 @@ export const BookingForm = () => {
 
       if (error) throw error;
 
-      toast.success("Agendamento realizado com sucesso! Em breve entraremos em contato.", {
-        duration: 5000,
-      });
-      
-      // Reset form
-      setName("");
-      setPhone("");
-      setDate(undefined);
-      setTime("");
-      setSelectedCut("");
-      setRating(0);
+      // Show success animation instead of toast
+      setShowSuccessAnimation(true);
     } catch (error: any) {
       // Use safe error messaging - never expose internal details
       toast.error(getClientSafeError(error));
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessAnimation(false);
+    
+    // Reset form
+    setName("");
+    setPhone("");
+    setDate(undefined);
+    setTime("");
+    setSelectedCut("");
+    setRating(0);
   };
 
   const containerVariants = {
@@ -129,6 +134,11 @@ export const BookingForm = () => {
   return (
     <>
       <BookingLoader isLoading={isSubmitting} />
+      <CadastroSuccessAnimation
+        isVisible={showSuccessAnimation}
+        nome={name}
+        onClose={handleSuccessClose}
+      />
       <motion.form
         onSubmit={handleSubmit}
         variants={containerVariants}
