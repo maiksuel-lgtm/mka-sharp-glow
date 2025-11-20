@@ -1,14 +1,36 @@
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { BookingForm } from "@/components/BookingForm";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const hasClientData = localStorage.getItem('client_phone');
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <BackgroundEffects />
       
       <div className="relative z-10 container mx-auto px-4 py-12 md:py-20">
+        {/* My Profile Button */}
+        {hasClientData && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-4 right-4 z-20"
+          >
+            <Button
+              onClick={() => navigate('/meus-dados')}
+              className="bg-gradient-gold text-primary-foreground hover:opacity-90 shadow-gold"
+            >
+              <User className="mr-2 h-4 w-4" />
+              Meu Perfil
+            </Button>
+          </motion.div>
+        )}
+        
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
