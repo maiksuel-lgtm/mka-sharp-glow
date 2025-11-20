@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getClientSafeError } from '@/lib/errorHandling';
 
 export interface Booking {
   id: string;
@@ -58,7 +59,7 @@ export const useBookings = () => {
     onError: (error: any) => {
       toast({
         title: 'Erro ao atualizar',
-        description: error.message,
+        description: getClientSafeError(error),
         variant: 'destructive',
       });
     },
@@ -80,7 +81,7 @@ export const useBookings = () => {
     onError: (error: any) => {
       toast({
         title: 'Erro ao excluir',
-        description: error.message,
+        description: getClientSafeError(error),
         variant: 'destructive',
       });
     },

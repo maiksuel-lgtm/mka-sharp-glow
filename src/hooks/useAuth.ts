@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
+import { getClientSafeError } from '@/lib/errorHandling';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -101,7 +102,7 @@ export const useAuth = () => {
     } catch (error: any) {
       toast({
         title: 'Erro ao fazer login',
-        description: error.message,
+        description: getClientSafeError(error),
         variant: 'destructive',
       });
       return { error };
@@ -122,7 +123,7 @@ export const useAuth = () => {
     } catch (error: any) {
       toast({
         title: 'Erro ao fazer logout',
-        description: error.message,
+        description: getClientSafeError(error),
         variant: 'destructive',
       });
     }
