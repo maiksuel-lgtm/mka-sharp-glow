@@ -314,7 +314,7 @@ export default function PerfilPosCadastro() {
                   <Button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="flex-1 bg-gold hover:bg-gold-light text-primary-foreground shadow-gold"
+                    className="flex-1 bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-2" />
                     {isSaving ? 'Salvando...' : 'Salvar Alterações'}
@@ -322,7 +322,7 @@ export default function PerfilPosCadastro() {
                   <Button
                     onClick={handleCancel}
                     variant="outline"
-                    className="border-border hover:bg-secondary"
+                    className="border-gold/50 hover:bg-gold/10 hover:border-gold text-gold transition-all"
                   >
                     Cancelar
                   </Button>
