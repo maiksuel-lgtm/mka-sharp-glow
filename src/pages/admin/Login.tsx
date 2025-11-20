@@ -6,12 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { motion } from 'framer-motion';
 import { Lock, Mail } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
   const { signIn, user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user && isAdmin) {
@@ -22,6 +26,59 @@ export default function AdminLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await signIn(email, password);
+  };
+
+  const handleCreateFirstAdmin = async () => {
+    if (!email || !password) {
+      toast({
+        title: 'Campos vazios',
+        description: 'Por favor, preencha email e senha.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsCreatingAdmin(true);
+    try {
+      // Create user with auto-confirm enabled
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/admin/dashboard`,
+        },
+      });
+
+      if (signUpError) throw signUpError;
+
+      if (authData.user) {
+        // Add admin role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ user_id: authData.user.id, role: 'admin' });
+
+        if (roleError) throw roleError;
+
+        toast({
+          title: 'Admin criado com sucesso!',
+          description: 'Fazendo login...',
+        });
+
+        // Sign in with the new admin account
+        setTimeout(() => {
+          signIn(email, password);
+        }, 1000);
+      }
+    } catch (error: any) {
+      console.error('Error creating admin:', error);
+      toast({
+        title: 'Erro ao criar admin',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCreatingAdmin(false);
+    }
   };
 
   return (
@@ -83,6 +140,21 @@ export default function AdminLogin() {
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
+
+          <div className="mt-6 pt-6 border-t border-border">
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              Primeiro acesso? Crie sua conta admin
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleCreateFirstAdmin}
+              disabled={isCreatingAdmin || loading}
+            >
+              {isCreatingAdmin ? 'Criando Admin...' : 'Criar Primeiro Admin'}
+            </Button>
+          </div>
         </div>
       </motion.div>
     </div>
