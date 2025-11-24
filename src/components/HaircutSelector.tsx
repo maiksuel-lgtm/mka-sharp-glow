@@ -1,6 +1,15 @@
 import { motion } from "framer-motion";
 import { Scissors, Wind, User, Sparkles, Slice, Briefcase, Users, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
+import degradeBaixo from "@/assets/haircuts/degrade-baixo.jpg";
+import degradeMedio from "@/assets/haircuts/degrade-medio.jpg";
+import degradeAlto from "@/assets/haircuts/degrade-alto.jpg";
+import navalhado from "@/assets/haircuts/navalhado.jpg";
+import social from "@/assets/haircuts/social.jpg";
+import americano from "@/assets/haircuts/americano.jpg";
+import barbaCompleta from "@/assets/haircuts/barba-completa.jpg";
+import barbaDesenhada from "@/assets/haircuts/barba-desenhada.jpg";
+import sobrancelhaBarba from "@/assets/haircuts/sobrancelha-barba.jpg";
 
 interface HaircutSelectorProps {
   selectedCut: string;
@@ -9,15 +18,15 @@ interface HaircutSelectorProps {
 
 export const HaircutSelector = ({ selectedCut, onSelect }: HaircutSelectorProps) => {
   const haircutStyles = [
-    { name: "Degradê Baixo", icon: Wind, gradient: "from-gold/20 to-gold/5" },
-    { name: "Degradê Médio", icon: Wind, gradient: "from-gold/30 to-gold/10" },
-    { name: "Degradê Alto", icon: Wind, gradient: "from-gold/40 to-gold/15" },
-    { name: "Corte Navalhado", icon: Slice, gradient: "from-gold/25 to-gold/5" },
-    { name: "Corte Social", icon: Briefcase, gradient: "from-gold/30 to-gold/10" },
-    { name: "Corte Americano", icon: Sparkles, gradient: "from-gold/35 to-gold/15" },
-    { name: "Barba Completa", icon: User, gradient: "from-gold/30 to-gold/10" },
-    { name: "Barba Desenhada", icon: Scissors, gradient: "from-gold/25 to-gold/5" },
-    { name: "Sobrancelha + Barba", icon: Eye, gradient: "from-gold/30 to-gold/10" },
+    { name: "Degradê Baixo", icon: Wind, gradient: "from-gold/20 to-gold/5", image: degradeBaixo },
+    { name: "Degradê Médio", icon: Wind, gradient: "from-gold/30 to-gold/10", image: degradeMedio },
+    { name: "Degradê Alto", icon: Wind, gradient: "from-gold/40 to-gold/15", image: degradeAlto },
+    { name: "Corte Navalhado", icon: Slice, gradient: "from-gold/25 to-gold/5", image: navalhado },
+    { name: "Corte Social", icon: Briefcase, gradient: "from-gold/30 to-gold/10", image: social },
+    { name: "Corte Americano", icon: Sparkles, gradient: "from-gold/35 to-gold/15", image: americano },
+    { name: "Barba Completa", icon: User, gradient: "from-gold/30 to-gold/10", image: barbaCompleta },
+    { name: "Barba Desenhada", icon: Scissors, gradient: "from-gold/25 to-gold/5", image: barbaDesenhada },
+    { name: "Sobrancelha + Barba", icon: Eye, gradient: "from-gold/30 to-gold/10", image: sobrancelhaBarba },
   ];
 
   return (
@@ -47,10 +56,10 @@ export const HaircutSelector = ({ selectedCut, onSelect }: HaircutSelectorProps)
               whileHover={{ scale: 1.03, y: -8 }}
               whileTap={{ scale: 0.97 }}
               className={cn(
-                "relative p-6 rounded-2xl border-2 transition-all duration-500",
+                "relative p-4 rounded-2xl border-2 transition-all duration-500",
                 "bg-card/50 backdrop-blur-sm",
-                "flex flex-col items-center justify-center gap-4",
-                "group overflow-hidden min-h-[160px]",
+                "flex flex-col items-center justify-center gap-3",
+                "group overflow-hidden min-h-[200px]",
                 isSelected
                   ? "border-gold shadow-gold-lg bg-gradient-to-br from-gold/20 to-transparent"
                   : "border-border/50 hover:border-gold/60 hover:shadow-gold"
@@ -74,22 +83,25 @@ export const HaircutSelector = ({ selectedCut, onSelect }: HaircutSelectorProps)
                 initial={false}
               />
               
-              {/* Icon with animated container */}
+              {/* Image container */}
               <motion.div
                 className={cn(
-                  "relative z-10 p-4 rounded-full transition-all duration-500",
-                  "bg-gradient-to-br from-gold/10 to-gold/5",
-                  "border border-gold/20",
-                  isSelected && "shadow-gold scale-110"
+                  "relative z-10 w-20 h-20 rounded-full overflow-hidden transition-all duration-500",
+                  "border-2 border-gold/30",
+                  isSelected && "shadow-gold scale-110 border-gold"
                 )}
-                whileHover={{ rotate: 5 }}
+                whileHover={{ scale: 1.05 }}
               >
-                <IconComponent 
-                  className={cn(
-                    "w-8 h-8 transition-colors duration-300",
-                    isSelected ? "text-gold" : "text-gold/70 group-hover:text-gold"
-                  )} 
+                <img 
+                  src={style.image} 
+                  alt={style.name}
+                  className="w-full h-full object-cover"
                 />
+                {/* Image overlay */}
+                <div className={cn(
+                  "absolute inset-0 bg-gradient-to-br from-gold/0 to-gold/20 transition-opacity duration-300",
+                  isSelected ? "opacity-30" : "opacity-0 group-hover:opacity-20"
+                )} />
               </motion.div>
               
               {/* Style name */}
