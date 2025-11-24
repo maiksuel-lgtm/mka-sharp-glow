@@ -4,10 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookingForm } from "@/components/BookingForm";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const navigate = useNavigate();
-  const hasClientData = localStorage.getItem('client_phone');
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -15,21 +16,19 @@ const Index = () => {
       
       <div className="relative z-10 container mx-auto px-4 py-12 md:py-20">
         {/* My Profile Button */}
-        {hasClientData && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute top-4 right-4 z-20"
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-4 right-4 z-20"
+        >
+          <Button
+            onClick={() => navigate(user ? '/meus-dados' : '/auth')}
+            className="bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
           >
-            <Button
-              onClick={() => navigate('/meus-dados')}
-              className="bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
-            >
-              <User className="mr-2 h-4 w-4" />
-              Meu Perfil
-            </Button>
-          </motion.div>
-        )}
+            <User className="mr-2 h-4 w-4" />
+            {user ? 'Meu Perfil' : 'Entrar'}
+          </Button>
+        </motion.div>
         
         {/* Header */}
         <motion.div
