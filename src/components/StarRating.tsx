@@ -5,17 +5,20 @@ import { cn } from "@/lib/utils";
 interface StarRatingProps {
   rating: number;
   onRate: (rating: number) => void;
+  showTitle?: boolean;
 }
 
-export const StarRating = ({ rating, onRate }: StarRatingProps) => {
+export const StarRating = ({ rating, onRate, showTitle = false }: StarRatingProps) => {
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-display font-bold text-gold flex items-center gap-3">
-        <Star className="w-6 h-6 fill-gold" />
-        Avalie sua Experiência
-      </h2>
+      {showTitle && (
+        <h2 className="text-2xl font-display font-bold text-gold flex items-center gap-3">
+          <Star className="w-6 h-6 fill-gold" />
+          Avalie sua Experiência
+        </h2>
+      )}
       
-      <div className="flex flex-col items-center gap-6 p-8 bg-card rounded-xl border border-border">
+      <div className="flex flex-col items-center gap-4">
         <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map((star) => (
             <motion.button
@@ -50,7 +53,7 @@ export const StarRating = ({ rating, onRate }: StarRatingProps) => {
             animate={{ opacity: 1, y: 0 }}
             className="text-gold/90 text-sm font-medium"
           >
-            Obrigado por avaliar! Sua opinião é importante.
+            {rating >= 4 ? "Excelente!" : rating >= 3 ? "Obrigado!" : "Podemos melhorar!"}
           </motion.p>
         )}
       </div>

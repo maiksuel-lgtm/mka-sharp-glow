@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { User, Phone, Calendar, Clock, Sparkles, Mail, Lock } from "lucide-react";
+import { User, Phone, Calendar, Clock, Sparkles, Mail, Lock, MessageSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { HaircutSelector } from "./HaircutSelector";
 import { StarRating } from "./StarRating";
+import { Textarea } from "@/components/ui/textarea";
 import { BookingLoader } from "./BookingLoader";
 import { CadastroSuccessAnimation } from "./CadastroSuccessAnimation";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ export const BookingForm = () => {
   const [time, setTime] = useState("");
   const [selectedCut, setSelectedCut] = useState("");
   const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
@@ -122,6 +124,7 @@ export const BookingForm = () => {
           booking_time: time,
           haircut_style: selectedCut,
           rating: rating || null,
+          comment: comment || null,
           user_id: userId,
         });
 
@@ -311,9 +314,33 @@ export const BookingForm = () => {
         <HaircutSelector selectedCut={selectedCut} onSelect={setSelectedCut} />
       </motion.div>
 
-      {/* Rating */}
-      <motion.div variants={itemVariants}>
-        <StarRating rating={rating} onRate={setRating} />
+      {/* Rating & Comment Section */}
+      <motion.div variants={itemVariants} className="space-y-6">
+        <h2 className="text-2xl font-display font-bold text-gold flex items-center gap-3">
+          <MessageSquare className="w-6 h-6" />
+          Avaliação
+        </h2>
+        
+        <div className="p-6 bg-card rounded-xl border border-border space-y-6">
+          <StarRating rating={rating} onRate={setRating} />
+          
+          <div className="space-y-2">
+            <Label htmlFor="comment" className="text-foreground/90">
+              Comentário (opcional)
+            </Label>
+            <Textarea
+              id="comment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Deixe um comentário sobre sua experiência ou expectativas..."
+              className="bg-background border-border focus:border-gold transition-colors min-h-[100px] resize-none"
+              maxLength={500}
+            />
+            <p className="text-xs text-muted-foreground text-right">
+              {comment.length}/500 caracteres
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       {/* Submit Button */}
