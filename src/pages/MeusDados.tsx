@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClientSafeError } from "@/lib/errorHandling";
 import { Button } from "@/components/ui/button";
-import { Scissors, Calendar as CalendarIcon, Clock, Award, Edit, Save, X, LogOut, User, Phone } from "lucide-react";
+import { Scissors, Calendar as CalendarIcon, Clock, Award, Edit, Save, X, LogOut, User, Phone, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HaircutSelector } from "@/components/HaircutSelector";
 import { Calendar } from "@/components/ui/calendar";
@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
+import { StarRating } from "@/components/StarRating";
 
 interface ClientData {
   name: string;
@@ -32,6 +33,13 @@ export default function MeusDados() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [isNewBooking, setIsNewBooking] = useState(false);
+  const [newBookingData, setNewBookingData] = useState({
+    haircutStyle: "",
+    bookingDate: undefined as Date | undefined,
+    bookingTime: "",
+    rating: 0,
+  });
 
   useEffect(() => {
     checkUser();
@@ -121,6 +129,46 @@ export default function MeusDados() {
     setEditedData(clientData || {});
     setSelectedDate(clientData ? new Date(clientData.bookingDate) : undefined);
     setIsEditing(false);
+  };
+
+  const handleNewBooking = async () => {
+    if (!user || !clientData) return;
+    if (!newBookingData.haircutStyle || !newBookingData.bookingDate || !newBookingData.bookingTime) {
+      toast.error("Preencha todos os campos do novo agendamento");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const formattedDate = newBookingData.bookingDate.toISOString().split('T')[0];
+
+      const { error } = await supabase.from('bookings').insert({
+        user_id: user.id,
+        client_name: clientData.name,
+        client_phone: clientData.phone,
+        haircut_style: newBookingData.haircutStyle,
+        booking_date: formattedDate,
+        booking_time: newBookingData.bookingTime,
+        rating: newBookingData.rating,
+        status: 'pending',
+      });
+
+      if (error) throw error;
+
+      toast.success("Novo agendamento criado com sucesso!");
+      setIsNewBooking(false);
+      setNewBookingData({ haircutStyle: "", bookingDate: undefined, bookingTime: "", rating: 0 });
+      await loadClientData(user.id);
+    } catch (error: any) {
+      toast.error(getClientSafeError(error));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelNewBooking = () => {
+    setIsNewBooking(false);
+    setNewBookingData({ haircutStyle: "", bookingDate: undefined, bookingTime: "", rating: 0 });
   };
 
   if (!clientData) {
@@ -285,9 +333,112 @@ export default function MeusDados() {
             </CardContent>
           </Card>
 
+          {/* New Booking Section */}
+          <AnimatePresence>
+            {isNewBooking && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Card className="bg-card border-gold/20 shadow-gold">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-gold">
+                      <Plus className="w-5 h-5" />
+                      Novo Agendamento
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Date Selection */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground">Selecione a Data</p>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !newBookingData.bookingDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {newBookingData.bookingDate
+                              ? format(newBookingData.bookingDate, "PPP", { locale: ptBR })
+                              : "Selecione uma data"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={newBookingData.bookingDate}
+                            onSelect={(date) => setNewBookingData({ ...newBookingData, bookingDate: date })}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    {/* Time Selection */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground">Selecione o Horário</p>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                        {timeSlots.map((slot) => (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setNewBookingData({ ...newBookingData, bookingTime: slot })}
+                            className={cn(
+                              "py-2 px-3 rounded-md text-sm font-medium transition-all border",
+                              newBookingData.bookingTime === slot
+                                ? "bg-gold text-primary-foreground border-gold"
+                                : "bg-secondary hover:bg-gold/10 border-border"
+                            )}
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Haircut Selection */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground">Estilo de Corte</p>
+                      <HaircutSelector
+                        selectedCut={newBookingData.haircutStyle}
+                        onSelect={(style) => setNewBookingData({ ...newBookingData, haircutStyle: style })}
+                      />
+                    </div>
+
+                    {/* Rating */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground">Avaliação (opcional)</p>
+                      <StarRating
+                        rating={newBookingData.rating}
+                        onRate={(rating) => setNewBookingData({ ...newBookingData, rating })}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Action Buttons */}
-          <div className="flex gap-4 justify-end">
-            {isEditing ? (
+          <div className="flex gap-4 justify-end flex-wrap">
+            {isNewBooking ? (
+              <>
+                <Button variant="outline" onClick={handleCancelNewBooking} disabled={isSaving}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button onClick={handleNewBooking} disabled={isSaving} className="bg-gold hover:bg-gold-light text-primary-foreground">
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSaving ? "Agendando..." : "Confirmar Agendamento"}
+                </Button>
+              </>
+            ) : isEditing ? (
               <>
                 <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
                   <X className="h-4 w-4 mr-2" />
@@ -299,10 +450,16 @@ export default function MeusDados() {
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setIsEditing(true)} className="bg-gold hover:bg-gold-light text-primary-foreground">
-                <Edit className="h-4 w-4 mr-2" />
-                Editar Agendamento
-              </Button>
+              <>
+                <Button onClick={() => setIsEditing(true)} variant="outline" className="border-gold/50 text-gold hover:bg-gold/10">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar Agendamento
+                </Button>
+                <Button onClick={() => setIsNewBooking(true)} className="bg-gold hover:bg-gold-light text-primary-foreground">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Agendamento
+                </Button>
+              </>
             )}
           </div>
         </div>
