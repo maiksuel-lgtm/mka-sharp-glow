@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClientSafeError } from "@/lib/errorHandling";
 import { Button } from "@/components/ui/button";
-import { Scissors, Calendar as CalendarIcon, Clock, Award, Edit, Save, X, LogOut, User, Phone, Plus } from "lucide-react";
+import { Scissors, Calendar as CalendarIcon, Clock, Award, Edit, Save, X, LogOut, User, Phone, Plus, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HaircutSelector } from "@/components/HaircutSelector";
 import { Calendar } from "@/components/ui/calendar";
@@ -40,6 +40,8 @@ export default function MeusDados() {
     bookingTime: "",
     rating: 0,
   });
+  const [isRating, setIsRating] = useState(false);
+  const [tempRating, setTempRating] = useState(0);
 
   useEffect(() => {
     checkUser();
@@ -171,6 +173,36 @@ export default function MeusDados() {
     setNewBookingData({ haircutStyle: "", bookingDate: undefined, bookingTime: "", rating: 0 });
   };
 
+  const handleSaveRating = async () => {
+    if (!user || tempRating === 0) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ rating: tempRating })
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      toast.success("Avaliação salva com sucesso!");
+      setIsRating(false);
+      await loadClientData(user.id);
+    } catch (error: any) {
+      toast.error(getClientSafeError(error));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    if (clientData) {
+      setTempRating(clientData.rating);
+    }
+  }, [clientData]);
+
   if (!clientData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -296,18 +328,109 @@ export default function MeusDados() {
                     </p>
                   </div>
                 )}
-                {clientData.rating > 0 && (
-                  <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4 text-gold" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Avaliação</p>
-                      <p className="text-lg font-medium text-foreground">{clientData.rating} estrelas</p>
+              </CardContent>
+            </Card>
+
+            {/* Rating Card */}
+            <Card className="bg-card border-gold/20 shadow-gold">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-gold">
+                  <Award className="w-5 h-5" />
+                  Avaliação
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {clientData.rating > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center gap-2 p-6 bg-secondary rounded-lg border border-gold/20">
+                      <div className="text-center">
+                        <div className="flex justify-center mb-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={cn(
+                                "w-8 h-8",
+                                star <= clientData.rating
+                                  ? "fill-gold text-gold"
+                                  : "fill-transparent text-gold/30"
+                              )}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-2xl font-display font-bold text-gold">
+                          {clientData.rating} de 5 estrelas
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Obrigado pela sua avaliação!
+                        </p>
+                      </div>
                     </div>
+                    <Button
+                      variant="outline"
+                      className="w-full border-gold/50 text-gold hover:bg-gold/10"
+                      onClick={() => setIsRating(true)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Alterar Avaliação
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-center text-muted-foreground">
+                      Você ainda não avaliou sua experiência
+                    </p>
+                    <Button
+                      className="w-full bg-gold hover:bg-gold-light text-primary-foreground"
+                      onClick={() => setIsRating(true)}
+                    >
+                      <Award className="h-4 w-4 mr-2" />
+                      Avaliar Experiência
+                    </Button>
                   </div>
                 )}
               </CardContent>
             </Card>
           </div>
+
+          {/* Rating Modal */}
+          <AnimatePresence>
+            {isRating && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Card className="bg-card border-gold/20 shadow-gold">
+                  <CardContent className="pt-6">
+                    <StarRating
+                      rating={tempRating}
+                      onRate={setTempRating}
+                    />
+                    <div className="flex gap-4 justify-end mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsRating(false);
+                          setTempRating(clientData.rating);
+                        }}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Cancelar
+                      </Button>
+                      <Button
+                        className="bg-gold hover:bg-gold-light text-primary-foreground"
+                        onClick={handleSaveRating}
+                        disabled={isSaving}
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        {isSaving ? "Salvando..." : "Salvar Avaliação"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Haircut Style Card */}
           <Card className="bg-card border-gold/20 shadow-gold">
@@ -408,15 +531,6 @@ export default function MeusDados() {
                       <HaircutSelector
                         selectedCut={newBookingData.haircutStyle}
                         onSelect={(style) => setNewBookingData({ ...newBookingData, haircutStyle: style })}
-                      />
-                    </div>
-
-                    {/* Rating */}
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-foreground">Avaliação (opcional)</p>
-                      <StarRating
-                        rating={newBookingData.rating}
-                        onRate={(rating) => setNewBookingData({ ...newBookingData, rating })}
                       />
                     </div>
                   </CardContent>
