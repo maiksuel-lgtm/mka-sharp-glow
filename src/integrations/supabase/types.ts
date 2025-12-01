@@ -20,6 +20,7 @@ export type Database = {
           booking_time: string
           client_name: string
           client_phone: string
+          comment: string | null
           confirmation_token: string | null
           created_at: string | null
           haircut_style: string
@@ -35,6 +36,7 @@ export type Database = {
           booking_time: string
           client_name: string
           client_phone: string
+          comment?: string | null
           confirmation_token?: string | null
           created_at?: string | null
           haircut_style: string
@@ -50,6 +52,7 @@ export type Database = {
           booking_time?: string
           client_name?: string
           client_phone?: string
+          comment?: string | null
           confirmation_token?: string | null
           created_at?: string | null
           haircut_style?: string

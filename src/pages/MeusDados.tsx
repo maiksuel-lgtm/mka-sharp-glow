@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClientSafeError } from "@/lib/errorHandling";
 import { Button } from "@/components/ui/button";
-import { Scissors, Calendar as CalendarIcon, Clock, Award, Edit, Save, X, LogOut, User, Phone, Plus, Star } from "lucide-react";
+import { Scissors, Calendar as CalendarIcon, Clock, Award, Edit, Save, X, LogOut, User, Phone, Plus, Star, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HaircutSelector } from "@/components/HaircutSelector";
 import { Calendar } from "@/components/ui/calendar";
@@ -15,6 +15,8 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
 import { StarRating } from "@/components/StarRating";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface ClientData {
   name: string;
@@ -23,6 +25,7 @@ interface ClientData {
   bookingDate: string;
   bookingTime: string;
   rating: number;
+  comment: string;
 }
 
 export default function MeusDados() {
@@ -42,6 +45,7 @@ export default function MeusDados() {
   });
   const [isRating, setIsRating] = useState(false);
   const [tempRating, setTempRating] = useState(0);
+  const [tempComment, setTempComment] = useState("");
 
   useEffect(() => {
     checkUser();
@@ -82,6 +86,7 @@ export default function MeusDados() {
         bookingDate: data.booking_date,
         bookingTime: data.booking_time,
         rating: data.rating || 0,
+        comment: data.comment || "",
       };
 
       setClientData(formattedData);
@@ -180,7 +185,7 @@ export default function MeusDados() {
     try {
       const { error } = await supabase
         .from('bookings')
-        .update({ rating: tempRating })
+        .update({ rating: tempRating, comment: tempComment || null })
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1);
@@ -200,6 +205,7 @@ export default function MeusDados() {
   useEffect(() => {
     if (clientData) {
       setTempRating(clientData.rating);
+      setTempComment(clientData.comment);
     }
   }, [clientData]);
 
@@ -342,8 +348,8 @@ export default function MeusDados() {
               <CardContent>
                 {clientData.rating > 0 ? (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-center gap-2 p-6 bg-secondary rounded-lg border border-gold/20">
-                      <div className="text-center">
+                    <div className="p-6 bg-secondary rounded-lg border border-gold/20">
+                      <div className="text-center mb-4">
                         <div className="flex justify-center mb-2">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
@@ -360,10 +366,13 @@ export default function MeusDados() {
                         <p className="text-2xl font-display font-bold text-gold">
                           {clientData.rating} de 5 estrelas
                         </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Obrigado pela sua avaliação!
-                        </p>
                       </div>
+                      {clientData.comment && (
+                        <div className="mt-4 pt-4 border-t border-gold/20">
+                          <p className="text-sm text-muted-foreground mb-1">Seu comentário:</p>
+                          <p className="text-foreground italic">"{clientData.comment}"</p>
+                        </div>
+                      )}
                     </div>
                     <Button
                       variant="outline"
@@ -401,17 +410,42 @@ export default function MeusDados() {
                 exit={{ opacity: 0, height: 0 }}
               >
                 <Card className="bg-card border-gold/20 shadow-gold">
-                  <CardContent className="pt-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-gold">
+                      <MessageSquare className="w-5 h-5" />
+                      Avalie sua Experiência
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
                     <StarRating
                       rating={tempRating}
                       onRate={setTempRating}
                     />
-                    <div className="flex gap-4 justify-end mt-6">
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="comment" className="text-foreground/90">
+                        Comentário (opcional)
+                      </Label>
+                      <Textarea
+                        id="comment"
+                        value={tempComment}
+                        onChange={(e) => setTempComment(e.target.value)}
+                        placeholder="Deixe um comentário sobre sua experiência..."
+                        className="bg-background border-border focus:border-gold transition-colors min-h-[100px] resize-none"
+                        maxLength={500}
+                      />
+                      <p className="text-xs text-muted-foreground text-right">
+                        {tempComment.length}/500 caracteres
+                      </p>
+                    </div>
+                    
+                    <div className="flex gap-4 justify-end">
                       <Button
                         variant="outline"
                         onClick={() => {
                           setIsRating(false);
                           setTempRating(clientData.rating);
+                          setTempComment(clientData.comment);
                         }}
                       >
                         <X className="h-4 w-4 mr-2" />
