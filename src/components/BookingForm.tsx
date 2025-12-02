@@ -130,6 +130,23 @@ export const BookingForm = () => {
 
       if (bookingError) throw bookingError;
 
+      // Send notification email
+      try {
+        await supabase.functions.invoke('send-booking-email', {
+          body: {
+            clientName: formData.name,
+            clientPhone: formData.phone,
+            bookingDate: formattedDate,
+            bookingTime: time,
+            haircutStyle: selectedCut,
+            comment: comment || undefined,
+          },
+        });
+      } catch (emailError) {
+        console.error('Error sending notification email:', emailError);
+        // Don't throw - continue even if email fails
+      }
+
       setShowSuccessAnimation(true);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
