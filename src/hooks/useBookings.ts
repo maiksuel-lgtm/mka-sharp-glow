@@ -11,6 +11,7 @@ export interface Booking {
   booking_time: string;
   haircut_style: string;
   rating: number | null;
+  comment: string | null;
   status: 'pending' | 'arrived' | 'completed' | 'cancelled';
   created_at: string;
   updated_at: string;
