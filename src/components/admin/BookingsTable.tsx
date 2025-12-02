@@ -5,11 +5,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, MessageSquare } from 'lucide-react';
 import { Booking } from '@/hooks/useBookings';
 import { EditBookingModal } from './EditBookingModal';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { ReadOnlyStars } from './ReadOnlyStars';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface BookingsTableProps {
   bookings: Booking[];
@@ -28,6 +29,7 @@ const statusConfig = {
 export const BookingsTable = ({ bookings, isLoading, onUpdate, onDelete }: BookingsTableProps) => {
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [deletingBooking, setDeletingBooking] = useState<Booking | null>(null);
+  const [viewingComment, setViewingComment] = useState<Booking | null>(null);
 
   if (isLoading) {
     return (
@@ -59,6 +61,7 @@ export const BookingsTable = ({ bookings, isLoading, onUpdate, onDelete }: Booki
               <TableHead>Horário</TableHead>
               <TableHead>Estilo</TableHead>
               <TableHead>Avaliação</TableHead>
+              <TableHead>Comentário</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
@@ -76,6 +79,20 @@ export const BookingsTable = ({ bookings, isLoading, onUpdate, onDelete }: Booki
                 <TableCell>
                   {booking.rating ? (
                     <ReadOnlyStars rating={booking.rating} size="sm" />
+                  ) : (
+                    <span className="text-muted-foreground text-sm">-</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {booking.comment ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setViewingComment(booking)}
+                      className="text-gold hover:text-gold-light"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
                   ) : (
                     <span className="text-muted-foreground text-sm">-</span>
                   )}
@@ -131,6 +148,37 @@ export const BookingsTable = ({ bookings, isLoading, onUpdate, onDelete }: Booki
           }}
           clientName={deletingBooking.client_name}
         />
+      )}
+
+      {viewingComment && (
+        <Dialog open={!!viewingComment} onOpenChange={() => setViewingComment(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-gold">
+                <MessageSquare className="h-5 w-5" />
+                Comentário do Cliente
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Cliente:</p>
+                <p className="font-medium">{viewingComment.client_name}</p>
+              </div>
+              {viewingComment.rating && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Avaliação:</p>
+                  <ReadOnlyStars rating={viewingComment.rating} />
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Comentário:</p>
+                <div className="bg-secondary p-4 rounded-lg border border-border">
+                  <p className="text-foreground italic">"{viewingComment.comment}"</p>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
