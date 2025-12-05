@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { motion } from 'framer-motion';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, Mail, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getClientSafeError } from '@/lib/errorHandling';
@@ -14,9 +14,46 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const { signIn, user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast({
+        title: 'Campo vazio',
+        description: 'Por favor, preencha o email.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/admin/login`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Email enviado!',
+        description: 'Verifique sua caixa de entrada para redefinir a senha.',
+      });
+      setIsForgotPassword(false);
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao enviar email',
+        description: getClientSafeError(error),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
 
   useEffect(() => {
     if (user && isAdmin) {
@@ -139,66 +176,115 @@ export default function AdminLogin() {
             <p className="text-muted-foreground">Painel Administrativo</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground">
-                Email
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  required
-                />
+          {isForgotPassword ? (
+            <form onSubmit={handleForgotPassword} className="space-y-6">
+              <button
+                type="button"
+                onClick={() => setIsForgotPassword(false)}
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Voltar ao login
+              </button>
+
+              <div className="space-y-2">
+                <Label htmlFor="reset-email" className="text-foreground">
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground">
-                Senha
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
-                  required
-                />
+              <Button
+                type="submit"
+                className="w-full bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
+                disabled={isResettingPassword}
+              >
+                {isResettingPassword ? 'Enviando...' : 'Enviar link de recuperação'}
+              </Button>
+            </form>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-foreground">
+                    Email
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="admin@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-foreground">
+                    Senha
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsForgotPassword(true)}
+                  className="text-sm text-gold hover:text-gold-light transition-colors"
+                >
+                  Esqueceu a senha?
+                </button>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
+                  disabled={loading}
+                >
+                  {loading ? 'Entrando...' : 'Entrar'}
+                </Button>
+              </form>
+
+              <div className="mt-6 pt-6 border-t border-border">
+                <p className="text-sm text-muted-foreground text-center mb-4">
+                  Primeiro acesso? Crie sua conta admin
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-gold/50 hover:bg-gold/10 hover:border-gold text-gold transition-all"
+                  onClick={handleCreateFirstAdmin}
+                  disabled={isCreatingAdmin || loading}
+                >
+                  {isCreatingAdmin ? 'Criando Admin...' : 'Criar Primeiro Admin'}
+                </Button>
               </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-gold hover:bg-gold-light text-primary-foreground shadow-gold-lg transition-all"
-              disabled={loading}
-            >
-              {loading ? 'Entrando...' : 'Entrar'}
-            </Button>
-          </form>
-
-          <div className="mt-6 pt-6 border-t border-border">
-            <p className="text-sm text-muted-foreground text-center mb-4">
-              Primeiro acesso? Crie sua conta admin
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full border-gold/50 hover:bg-gold/10 hover:border-gold text-gold transition-all"
-              onClick={handleCreateFirstAdmin}
-              disabled={isCreatingAdmin || loading}
-            >
-              {isCreatingAdmin ? 'Criando Admin...' : 'Criar Primeiro Admin'}
-            </Button>
-          </div>
+            </>
+          )}
         </div>
       </motion.div>
     </div>
