@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookingForm } from "@/components/BookingForm";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
+import { ReviewsSection } from "@/components/ReviewsSection";
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
@@ -68,6 +69,9 @@ const Index = () => {
 
         {/* Booking Form */}
         <BookingForm />
+
+        {/* Reviews Section */}
+        <ReviewsSection />
 
         {/* Footer */}
         <motion.footer
