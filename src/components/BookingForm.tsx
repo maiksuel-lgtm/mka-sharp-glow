@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { User, Phone, Calendar, Clock, Sparkles, Mail, Lock, MessageSquare } from "lucide-react";
+import { User, Phone, Calendar, Clock, Sparkles, Mail, Lock, MessageSquare, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -357,6 +357,21 @@ export const BookingForm = () => {
               {comment.length}/500 caracteres
             </p>
           </div>
+          
+          <Button
+            type="button"
+            variant="outline"
+            disabled={rating === null}
+            className="w-full border-gold text-gold hover:bg-gold hover:text-primary-foreground transition-all"
+            onClick={() => {
+              toast.success("Avaliação registrada!", {
+                description: "Sua avaliação será enviada junto com o agendamento.",
+              });
+            }}
+          >
+            <Star className="w-4 h-4 mr-2" />
+            Enviar Avaliação
+          </Button>
         </div>
       </motion.div>
 
