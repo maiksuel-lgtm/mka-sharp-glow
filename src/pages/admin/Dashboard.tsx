@@ -4,6 +4,7 @@ import { AdminHeader } from '@/components/admin/AdminHeader';
 import { StatsCards } from '@/components/admin/StatsCards';
 import { BookingFilters } from '@/components/admin/BookingFilters';
 import { BookingsTable } from '@/components/admin/BookingsTable';
+import { ReviewsSection } from '@/components/admin/ReviewsSection';
 import { useBookings } from '@/hooks/useBookings';
 
 export default function AdminDashboard() {
@@ -43,6 +44,8 @@ export default function AdminDashboard() {
         </motion.div>
 
         <StatsCards bookings={bookings} />
+
+        <ReviewsSection />
 
         <BookingFilters
           searchTerm={searchTerm}
