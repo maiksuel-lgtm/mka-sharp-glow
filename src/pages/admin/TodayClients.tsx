@@ -1,22 +1,14 @@
-import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { TodayHeader } from '@/components/admin/TodayHeader';
 import { TodayStatsCards } from '@/components/admin/TodayStatsCards';
-import { TodayFilters } from '@/components/admin/TodayFilters';
-import { TodayClientsList } from '@/components/admin/TodayClientsList';
+import { TodayStagesView } from '@/components/admin/TodayStagesView';
 import { useTodayBookings } from '@/hooks/useTodayBookings';
 import { useBookings } from '@/hooks/useBookings';
 
 export default function TodayClients() {
   const { bookings, isLoading, nextClientId } = useTodayBookings();
   const { updateBooking } = useBookings();
-  const [statusFilter, setStatusFilter] = useState('all');
-
-  const filteredBookings = useMemo(() => {
-    if (statusFilter === 'all') return bookings;
-    return bookings.filter((booking) => booking.status === statusFilter);
-  }, [bookings, statusFilter]);
 
   const handleStatusChange = (id: string, status: 'arrived' | 'completed') => {
     updateBooking({ id, updates: { status } });
@@ -37,18 +29,14 @@ export default function TodayClients() {
 
         <TodayStatsCards bookings={bookings} />
 
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold text-foreground">
-            Agendamentos de Hoje
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold text-foreground mb-6">
+            Clientes por Etapa
           </h3>
-          <TodayFilters
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-          />
         </div>
 
-        <TodayClientsList
-          bookings={filteredBookings}
+        <TodayStagesView
+          bookings={bookings}
           isLoading={isLoading}
           nextClientId={nextClientId}
           onStatusChange={handleStatusChange}
