@@ -1,3 +1,5 @@
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
 const corsHeaders = {
@@ -5,14 +7,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface BookingEmailRequest {
-  clientName: string;
-  clientPhone: string;
-  bookingDate: string;
-  bookingTime: string;
-  haircutStyle: string;
-  comment?: string;
-}
+// Input validation schema
+const requestSchema = z.object({
+  clientName: z.string().min(1, "Name is required").max(100, "Name too long"),
+  clientPhone: z.string().min(1, "Phone is required").max(30, "Phone too long"),
+  bookingDate: z.string().min(1, "Date is required"),
+  bookingTime: z.string().min(1, "Time is required"),
+  haircutStyle: z.string().min(1, "Style is required").max(100, "Style too long"),
+  comment: z.string().max(500, "Comment too long").optional().nullable(),
+});
+
+// HTML escape function to prevent injection
+const escapeHtml = (str: string | null | undefined): string => {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
 
 Deno.serve(async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -21,7 +35,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { clientName, clientPhone, bookingDate, bookingTime, haircutStyle, comment }: BookingEmailRequest = await req.json();
+    const body = await req.json();
+    
+    // Validate input
+    const parseResult = requestSchema.safeParse(body);
+    if (!parseResult.success) {
+      console.error('Validation error:', parseResult.error.errors);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input data', details: parseResult.error.errors }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        }
+      );
+    }
+
+    const { clientName, clientPhone, bookingDate, bookingTime, haircutStyle, comment } = parseResult.data;
 
     console.log('Sending booking notification email for:', clientName);
 
@@ -37,6 +66,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
       month: '2-digit',
       year: 'numeric'
     });
+
+    // Escape all user inputs to prevent HTML injection
+    const safeClientName = escapeHtml(clientName);
+    const safeClientPhone = escapeHtml(clientPhone);
+    const safeHaircutStyle = escapeHtml(haircutStyle);
+    const safeComment = escapeHtml(comment);
+    const safeFormattedDate = escapeHtml(formattedDate);
+    const safeBookingTime = escapeHtml(bookingTime);
+    
+    // Sanitize phone number for WhatsApp link (only digits)
+    const whatsappPhone = clientPhone.replace(/\D/g, '');
 
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
@@ -55,7 +95,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 <strong style="color: #555;">Nome Completo:</strong>
               </td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">
-                ${clientName}
+                ${safeClientName}
               </td>
             </tr>
             <tr>
@@ -63,8 +103,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 <strong style="color: #555;">Telefone/WhatsApp:</strong>
               </td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">
-                <a href="https://wa.me/${clientPhone.replace(/\D/g, '')}" style="color: #25D366; text-decoration: none;">
-                  ${clientPhone}
+                <a href="https://wa.me/${whatsappPhone}" style="color: #25D366; text-decoration: none;">
+                  ${safeClientPhone}
                 </a>
               </td>
             </tr>
@@ -80,7 +120,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 <strong style="color: #555;">Data:</strong>
               </td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">
-                ${formattedDate}
+                ${safeFormattedDate}
               </td>
             </tr>
             <tr>
@@ -88,7 +128,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 <strong style="color: #555;">Horário:</strong>
               </td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">
-                ${bookingTime}
+                ${safeBookingTime}
               </td>
             </tr>
             <tr>
@@ -96,17 +136,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 <strong style="color: #555;">Tipo de Corte/Serviço:</strong>
               </td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">
-                ${haircutStyle}
+                ${safeHaircutStyle}
               </td>
             </tr>
           </table>
 
-          ${comment ? `
+          ${safeComment ? `
             <h2 style="color: #D4AF37; margin-top: 30px; border-bottom: 2px solid #D4AF37; padding-bottom: 10px;">
               Observações Adicionais
             </h2>
             <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #D4AF37; margin-bottom: 20px;">
-              <p style="margin: 0; color: #555; font-style: italic;">${comment}</p>
+              <p style="margin: 0; color: #555; font-style: italic;">${safeComment}</p>
             </div>
           ` : ''}
 
@@ -150,7 +190,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error('Error in send-booking-email function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Failed to process request' }),
       {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
