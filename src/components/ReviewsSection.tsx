@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface Review {
   id: string;
-  client_name: string;
+  first_name: string;
   rating: number;
   comment: string | null;
   created_at: string;
@@ -17,15 +17,15 @@ export const ReviewsSection = () => {
 
   useEffect(() => {
     const fetchReviews = async () => {
+      // Use the secure public_reviews view that only exposes safe fields
       const { data, error } = await supabase
-        .from("bookings")
-        .select("id, client_name, rating, comment, created_at")
-        .not("rating", "is", null)
+        .from("public_reviews" as any)
+        .select("id, first_name, rating, comment, created_at")
         .order("created_at", { ascending: false })
         .limit(6);
 
       if (!error && data) {
-        setReviews(data as Review[]);
+        setReviews(data as unknown as Review[]);
       }
       setIsLoading(false);
     };
@@ -105,7 +105,7 @@ export const ReviewsSection = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <h3 className="font-semibold text-foreground truncate">
-                    {review.client_name.split(" ")[0]}
+                    {review.first_name}
                   </h3>
                   <span className="text-xs text-muted-foreground flex-shrink-0">
                     {formatDate(review.created_at)}
