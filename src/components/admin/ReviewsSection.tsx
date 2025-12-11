@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Star, MessageSquare, User, Calendar, Pencil } from 'lucide-react';
+import { Star, MessageSquare, User, Calendar, Pencil, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,6 +27,7 @@ export function ReviewsSection() {
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [editRating, setEditRating] = useState<number>(0);
   const [editComment, setEditComment] = useState<string>('');
+  const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
 
   const { data: reviews = [], isLoading } = useQuery({
     queryKey: ['admin-reviews'],
@@ -59,6 +60,25 @@ export function ReviewsSection() {
     },
     onError: () => {
       toast.error('Erro ao atualizar avaliação');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ rating: null, comment: null })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
+      toast.success('Avaliação excluída com sucesso!');
+      setDeletingReviewId(null);
+    },
+    onError: () => {
+      toast.error('Erro ao excluir avaliação');
     },
   });
 
@@ -180,14 +200,23 @@ export function ReviewsSection() {
                       "{review.comment}"
                     </p>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => handleEdit(review)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(review)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => review.id && setDeletingReviewId(review.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -221,6 +250,29 @@ export function ReviewsSection() {
             </Button>
             <Button onClick={handleSave} disabled={updateMutation.isPending}>
               {updateMutation.isPending ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deletingReviewId} onOpenChange={() => setDeletingReviewId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir Avaliação</DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground py-4">
+            Tem certeza que deseja excluir esta avaliação? Esta ação não pode ser desfeita.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletingReviewId(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deletingReviewId && deleteMutation.mutate(deletingReviewId)}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </Button>
           </DialogFooter>
         </DialogContent>
