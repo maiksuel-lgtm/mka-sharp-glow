@@ -113,7 +113,7 @@ export function SubscriptionPlans() {
               </div>
 
               <Button
-                onClick={() => navigate('/auth')}
+                onClick={() => window.open('https://buy.stripe.com/test_bJe28k6zn2ea4GG7eB1kA00', '_blank')}
                 className={cn(
                   "w-full",
                   plan.popular
