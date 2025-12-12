@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BookingForm } from "@/components/BookingForm";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
 import { ReviewsSection } from "@/components/ReviewsSection";
+import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
@@ -69,6 +70,9 @@ const Index = () => {
 
         {/* Booking Form */}
         <BookingForm />
+
+        {/* Subscription Plans */}
+        <SubscriptionPlans />
 
         {/* Reviews Section */}
         <ReviewsSection />
