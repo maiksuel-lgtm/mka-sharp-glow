@@ -11,6 +11,7 @@ interface SubscriptionPlan {
   services: string[];
   icon: React.ReactNode;
   popular?: boolean;
+  paymentLink: string;
 }
 
 const subscriptionPlans: SubscriptionPlan[] = [
@@ -20,6 +21,7 @@ const subscriptionPlans: SubscriptionPlan[] = [
     price: 100,
     services: ['Corte de Cabelo'],
     icon: <Scissors className="h-8 w-8" />,
+    paymentLink: 'https://buy.stripe.com/test_bJe28k6zn2ea4GG7eB1kA00',
   },
   {
     id: 'standard',
@@ -28,6 +30,7 @@ const subscriptionPlans: SubscriptionPlan[] = [
     services: ['Corte de Cabelo', 'Barba'],
     icon: <Sparkles className="h-8 w-8" />,
     popular: true,
+    paymentLink: 'https://buy.stripe.com/test_cNi7sEbTHaKGflkcyV1kA01',
   },
   {
     id: 'premium',
@@ -35,6 +38,7 @@ const subscriptionPlans: SubscriptionPlan[] = [
     price: 165,
     services: ['Corte de Cabelo', 'Barba', 'Sobrancelha'],
     icon: <Crown className="h-8 w-8" />,
+    paymentLink: 'https://buy.stripe.com/test_bJe28k6zn2ea4GG7eB1kA00',
   },
 ];
 
@@ -113,7 +117,7 @@ export function SubscriptionPlans() {
               </div>
 
               <Button
-                onClick={() => window.open('https://buy.stripe.com/test_bJe28k6zn2ea4GG7eB1kA00', '_blank')}
+                onClick={() => window.open(plan.paymentLink, '_blank')}
                 className={cn(
                   "w-full",
                   plan.popular
