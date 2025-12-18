@@ -84,7 +84,7 @@ const Index = () => {
           transition={{ duration: 0.8, delay: 1 }}
           className="mt-20 text-center text-muted-foreground text-sm"
         >
-          <p>© 2024 MkA Cortes - Todos os direitos reservados</p>
+          <p>© {new Date().getFullYear()} MkA Cortes - Todos os direitos reservados</p>
         </motion.footer>
       </div>
     </div>
