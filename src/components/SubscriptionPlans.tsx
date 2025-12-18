@@ -38,7 +38,7 @@ const subscriptionPlans: SubscriptionPlan[] = [
     price: 165,
     services: ['Corte de Cabelo', 'Barba', 'Sobrancelha'],
     icon: <Crown className="h-8 w-8" />,
-    paymentLink: 'https://buy.stripe.com/test_bJe28k6zn2ea4GG7eB1kA00',
+    paymentLink: 'https://buy.stripe.com/test_fZu5kw1f31a6gpodCZ1kA02',
   },
 ];
 
