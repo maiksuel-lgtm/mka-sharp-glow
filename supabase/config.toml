@@ -1,1 +1,4 @@
 project_id = "exfgxevtcfooofmtuazq"
+
+[functions.send-booking-email]
+verify_jwt = true
