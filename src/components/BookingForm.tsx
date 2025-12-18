@@ -361,7 +361,7 @@ export const BookingForm = () => {
           <Button
             type="button"
             variant="outline"
-            disabled={rating === null}
+            disabled={rating === 0}
             className="w-full border-gold text-gold hover:bg-gold hover:text-primary-foreground transition-all"
             onClick={() => {
               toast.success("Avaliação registrada!", {

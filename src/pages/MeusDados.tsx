@@ -35,6 +35,7 @@ export default function MeusDados() {
   const [editedData, setEditedData] = useState<Partial<ClientData>>({});
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isNewBooking, setIsNewBooking] = useState(false);
   const [newBookingData, setNewBookingData] = useState({
@@ -62,6 +63,7 @@ export default function MeusDados() {
   };
 
   const loadClientData = async (userId: string) => {
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from('bookings')
@@ -69,13 +71,13 @@ export default function MeusDados() {
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
       if (!data) {
-        toast.error("Nenhum agendamento encontrado");
-        navigate('/');
+        setClientData(null);
+        setIsLoading(false);
         return;
       }
 
@@ -94,6 +96,8 @@ export default function MeusDados() {
       setSelectedDate(new Date(data.booking_date));
     } catch (error: any) {
       toast.error(getClientSafeError(error));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -209,7 +213,7 @@ export default function MeusDados() {
     }
   }, [clientData]);
 
-  if (!clientData) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <motion.div
@@ -218,6 +222,42 @@ export default function MeusDados() {
         >
           <Scissors className="w-12 h-12 text-gold" />
         </motion.div>
+      </div>
+    );
+  }
+
+  if (!clientData) {
+    return (
+      <div className="min-h-screen bg-background relative">
+        <BackgroundEffects />
+        <div className="relative z-10 container mx-auto px-4 py-8 md:py-12">
+          <div className="max-w-2xl mx-auto text-center space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-4"
+            >
+              <div className="flex justify-end mb-4">
+                <Button variant="outline" onClick={handleLogout} className="border-gold/50 text-gold hover:bg-gold/10">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
+              </div>
+              <Scissors className="w-16 h-16 text-gold mx-auto" />
+              <h1 className="text-3xl font-bold text-gold">Nenhum agendamento encontrado</h1>
+              <p className="text-muted-foreground">
+                Você ainda não tem agendamentos. Faça seu primeiro agendamento agora!
+              </p>
+              <Button
+                onClick={() => navigate('/')}
+                className="bg-gold hover:bg-gold-light text-primary-foreground"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Fazer Agendamento
+              </Button>
+            </motion.div>
+          </div>
+        </div>
       </div>
     );
   }

@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { Scissors, Crown, Check, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -43,8 +42,6 @@ const subscriptionPlans: SubscriptionPlan[] = [
 ];
 
 export function SubscriptionPlans() {
-  const navigate = useNavigate();
-
   return (
     <motion.section
       initial={{ opacity: 0, y: 40 }}
