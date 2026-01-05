@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClientSafeError } from "@/lib/errorHandling";
 import { Button } from "@/components/ui/button";
-import { Scissors, Calendar as CalendarIcon, Clock, Award, Edit, Save, X, LogOut, User, Phone, Plus, Star, MessageSquare } from "lucide-react";
+import { Scissors, Calendar as CalendarIcon, Clock, Award, Edit, Save, X, LogOut, User as UserIcon, Phone, Plus, Star, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HaircutSelector } from "@/components/HaircutSelector";
 import { Calendar } from "@/components/ui/calendar";
@@ -30,7 +31,7 @@ interface ClientData {
 
 export default function MeusDados() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [clientData, setClientData] = useState<ClientData | null>(null);
   const [editedData, setEditedData] = useState<Partial<ClientData>>({});
   const [isEditing, setIsEditing] = useState(false);
@@ -48,21 +49,7 @@ export default function MeusDados() {
   const [tempRating, setTempRating] = useState(0);
   const [tempComment, setTempComment] = useState("");
 
-  useEffect(() => {
-    checkUser();
-  }, []);
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    setUser(user);
-    loadClientData(user.id);
-  };
-
-  const loadClientData = async (userId: string) => {
+  const loadClientData = useCallback(async (userId: string) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -94,12 +81,26 @@ export default function MeusDados() {
       setClientData(formattedData);
       setEditedData(formattedData);
       setSelectedDate(new Date(data.booking_date));
-    } catch (error: any) {
+    } catch (error) {
       toast.error(getClientSafeError(error));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        navigate('/auth');
+        return;
+      }
+      setUser(currentUser);
+      loadClientData(currentUser.id);
+    };
+    
+    checkUser();
+  }, [navigate, loadClientData]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -292,7 +293,7 @@ export default function MeusDados() {
             <Card className="bg-card border-gold/20 shadow-gold">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gold">
-                  <User className="w-5 h-5" />
+                  <UserIcon className="w-5 h-5" />
                   Dados Pessoais
                 </CardTitle>
               </CardHeader>

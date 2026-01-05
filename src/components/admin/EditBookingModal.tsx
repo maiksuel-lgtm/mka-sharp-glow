@@ -103,7 +103,7 @@ export const EditBookingModal = ({ booking, open, onClose, onSave }: EditBooking
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value: any) => setFormData({ ...formData, status: value })}
+                onValueChange={(value: 'pending' | 'arrived' | 'completed' | 'cancelled') => setFormData({ ...formData, status: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
