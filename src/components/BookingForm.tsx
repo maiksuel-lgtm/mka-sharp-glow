@@ -142,9 +142,8 @@ export const BookingForm = () => {
             comment: comment || undefined,
           },
         });
-      } catch (emailError) {
-        console.error('Error sending notification email:', emailError);
-        // Don't throw - continue even if email fails
+      } catch {
+        // Email notification failed silently - booking was already created successfully
       }
 
       setShowSuccessAnimation(true);
@@ -207,7 +206,7 @@ export const BookingForm = () => {
         
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-foreground/90">Nome Completo</Label>
+            <Label htmlFor="name" className="text-foreground/90">Nome Completo *</Label>
             <div className="relative">
               <Input
                 id="name"
@@ -215,12 +214,14 @@ export const BookingForm = () => {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Digite seu nome completo"
                 className="bg-card border-border focus:border-gold transition-colors pl-4"
+                required
+                aria-required="true"
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="phone" className="text-foreground/90">Telefone (WhatsApp)</Label>
+            <Label htmlFor="phone" className="text-foreground/90">Telefone (WhatsApp) *</Label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold/60" />
               <Input
@@ -230,12 +231,14 @@ export const BookingForm = () => {
                 placeholder="(XX) XXXXX-XXXX"
                 className="bg-card border-border focus:border-gold transition-colors pl-10"
                 maxLength={15}
+                required
+                aria-required="true"
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-foreground/90">Email</Label>
+            <Label htmlFor="email" className="text-foreground/90">Email *</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold/60" />
               <Input
@@ -245,12 +248,14 @@ export const BookingForm = () => {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="seu@email.com"
                 className="bg-card border-border focus:border-gold transition-colors pl-10"
+                required
+                aria-required="true"
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-foreground/90">Senha</Label>
+            <Label htmlFor="password" className="text-foreground/90">Senha *</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold/60" />
               <Input
@@ -260,6 +265,9 @@ export const BookingForm = () => {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="Mínimo 6 caracteres"
                 className="bg-card border-border focus:border-gold transition-colors pl-10"
+                required
+                aria-required="true"
+                minLength={6}
               />
             </div>
           </div>

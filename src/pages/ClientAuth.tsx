@@ -111,7 +111,6 @@ export default function ClientAuth() {
             });
 
           if (subscriptionError) {
-            console.error('Erro ao criar assinatura:', subscriptionError);
             toast.error('Conta criada, mas houve erro ao criar assinatura');
           } else {
             toast.success(`Conta criada com plano ${selectedPlan.name}!`);
