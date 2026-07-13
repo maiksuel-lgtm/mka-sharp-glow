@@ -9,6 +9,7 @@ import { Lock, Mail, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getClientSafeError } from '@/lib/errorHandling';
+import { Helmet } from 'react-helmet-async';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -164,6 +165,12 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Helmet>
+        <title>Login Admin — MkA Cortes</title>
+        <meta name="description" content="Acesso restrito ao painel administrativo da barbearia MkA Cortes." />
+        <meta name="robots" content="noindex,nofollow" />
+        <link rel="canonical" href="https://mka-cortes.lovable.app/admin/login" />
+      </Helmet>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
