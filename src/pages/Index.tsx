@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Sparkles, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { BookingForm } from "@/components/BookingForm";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
@@ -14,7 +15,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      <Helmet>
+        <title>MkA Cortes — Barbearia Premium e Agendamento Online</title>
+        <meta name="description" content="Agende seu corte na MkA Cortes: barbearia premium com cortes, barba e planos de assinatura mensal a partir de R$100." />
+        <link rel="canonical" href="https://mka-cortes.lovable.app/" />
+        <meta property="og:title" content="MkA Cortes — Barbearia Premium" />
+        <meta property="og:description" content="Cortes premium, barba e planos de assinatura mensal. Agende online." />
+        <meta property="og:url" content="https://mka-cortes.lovable.app/" />
+      </Helmet>
       <BackgroundEffects />
+
       
       <div className="relative z-10 container mx-auto px-4 py-12 md:py-20">
         {/* My Profile Button */}
