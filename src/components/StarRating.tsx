@@ -25,6 +25,8 @@ export const StarRating = ({ rating, onRate, showTitle = false }: StarRatingProp
               key={star}
               type="button"
               onClick={() => onRate(star)}
+              aria-label={`Avaliar com ${star} ${star === 1 ? "estrela" : "estrelas"}`}
+              aria-pressed={star <= rating}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "scale(1.2)";
               }}
@@ -36,6 +38,7 @@ export const StarRating = ({ rating, onRate, showTitle = false }: StarRatingProp
               className="transition-transform duration-200"
             >
               <Star
+                aria-hidden="true"
                 className={cn(
                   "w-12 h-12 transition-all duration-300",
                   star <= rating
@@ -43,6 +46,7 @@ export const StarRating = ({ rating, onRate, showTitle = false }: StarRatingProp
                     : "fill-transparent text-gold/30 hover:text-gold/60"
                 )}
               />
+              <span className="sr-only">{star} de 5</span>
             </motion.button>
           ))}
         </div>
