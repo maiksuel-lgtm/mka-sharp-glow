@@ -9,6 +9,7 @@ import { Lock, Mail, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getClientSafeError } from '@/lib/errorHandling';
+import { Helmet } from 'react-helmet-async';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
