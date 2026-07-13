@@ -299,10 +299,10 @@ export default function MeusDados() {
             {/* Personal Info Card */}
             <Card className="bg-card border-gold/20 shadow-gold">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gold">
+                <h2 className="flex items-center gap-2 text-gold">
                   <UserIcon className="w-5 h-5" />
                   Dados Pessoais
-                </CardTitle>
+                </h2>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -322,10 +322,10 @@ export default function MeusDados() {
             {/* Booking Info Card */}
             <Card className="bg-card border-gold/20 shadow-gold">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gold">
+                <h2 className="flex items-center gap-2 text-gold">
                   <Clock className="w-5 h-5" />
                   Agendamento
-                </CardTitle>
+                </h2>
               </CardHeader>
               <CardContent className="space-y-4">
                 {isEditing ? (
@@ -388,10 +388,10 @@ export default function MeusDados() {
             {/* Rating Card */}
             <Card className="bg-card border-gold/20 shadow-gold">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gold">
+                <h2 className="flex items-center gap-2 text-gold">
                   <Award className="w-5 h-5" />
                   Avaliação
-                </CardTitle>
+                </h2>
               </CardHeader>
               <CardContent>
                 {clientData.rating > 0 ? (
@@ -459,10 +459,10 @@ export default function MeusDados() {
               >
                 <Card className="bg-card border-gold/20 shadow-gold">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gold">
+                    <h2 className="flex items-center gap-2 text-gold">
                       <MessageSquare className="w-5 h-5" />
                       Avalie sua Experiência
-                    </CardTitle>
+                    </h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <StarRating
@@ -517,10 +517,10 @@ export default function MeusDados() {
           {/* Haircut Style Card */}
           <Card className="bg-card border-gold/20 shadow-gold">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gold">
+              <h2 className="flex items-center gap-2 text-gold">
                 <Scissors className="w-5 h-5" />
                 Estilo de Corte
-              </CardTitle>
+              </h2>
             </CardHeader>
             <CardContent>
               {isEditing ? (
@@ -548,10 +548,10 @@ export default function MeusDados() {
               >
                 <Card className="bg-card border-gold/20 shadow-gold">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gold">
+                    <h2 className="flex items-center gap-2 text-gold">
                       <Plus className="w-5 h-5" />
                       Novo Agendamento
-                    </CardTitle>
+                    </h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Date Selection */}
