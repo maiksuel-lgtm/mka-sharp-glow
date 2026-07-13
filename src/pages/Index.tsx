@@ -56,7 +56,7 @@ const Index = () => {
             className="inline-block mb-6"
           >
             <h1 className="text-5xl md:text-7xl font-display font-bold text-gold tracking-tight">
-              MkA Cortes
+              MkA Cortes — Barbearia Premium e Estilo
             </h1>
             <motion.div
               className="h-1 bg-gradient-gold rounded-full mt-4"
@@ -79,13 +79,15 @@ const Index = () => {
         </motion.div>
 
         {/* Booking Form */}
-        <BookingForm />
+        <main>
+          <BookingForm />
 
-        {/* Subscription Plans */}
-        <SubscriptionPlans />
+          {/* Subscription Plans */}
+          <SubscriptionPlans />
 
-        {/* Reviews Section */}
-        <ReviewsSection />
+          {/* Reviews Section */}
+          <ReviewsSection />
+        </main>
 
         {/* Footer */}
         <motion.footer
