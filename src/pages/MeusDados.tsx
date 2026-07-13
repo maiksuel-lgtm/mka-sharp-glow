@@ -299,7 +299,7 @@ export default function MeusDados() {
             {/* Personal Info Card */}
             <Card className="bg-card border-gold/20 shadow-gold">
               <CardHeader>
-                <h2 className="flex items-center gap-2 text-gold">
+                <h2 className="flex items-center gap-2 text-gold text-2xl font-semibold leading-none tracking-tight">
                   <UserIcon className="w-5 h-5" />
                   Dados Pessoais
                 </h2>
@@ -322,7 +322,7 @@ export default function MeusDados() {
             {/* Booking Info Card */}
             <Card className="bg-card border-gold/20 shadow-gold">
               <CardHeader>
-                <h2 className="flex items-center gap-2 text-gold">
+                <h2 className="flex items-center gap-2 text-gold text-2xl font-semibold leading-none tracking-tight">
                   <Clock className="w-5 h-5" />
                   Agendamento
                 </h2>
@@ -388,7 +388,7 @@ export default function MeusDados() {
             {/* Rating Card */}
             <Card className="bg-card border-gold/20 shadow-gold">
               <CardHeader>
-                <h2 className="flex items-center gap-2 text-gold">
+                <h2 className="flex items-center gap-2 text-gold text-2xl font-semibold leading-none tracking-tight">
                   <Award className="w-5 h-5" />
                   Avaliação
                 </h2>
@@ -459,7 +459,7 @@ export default function MeusDados() {
               >
                 <Card className="bg-card border-gold/20 shadow-gold">
                   <CardHeader>
-                    <h2 className="flex items-center gap-2 text-gold">
+                    <h2 className="flex items-center gap-2 text-gold text-2xl font-semibold leading-none tracking-tight">
                       <MessageSquare className="w-5 h-5" />
                       Avalie sua Experiência
                     </h2>
@@ -517,7 +517,7 @@ export default function MeusDados() {
           {/* Haircut Style Card */}
           <Card className="bg-card border-gold/20 shadow-gold">
             <CardHeader>
-              <h2 className="flex items-center gap-2 text-gold">
+              <h2 className="flex items-center gap-2 text-gold text-2xl font-semibold leading-none tracking-tight">
                 <Scissors className="w-5 h-5" />
                 Estilo de Corte
               </h2>
@@ -548,7 +548,7 @@ export default function MeusDados() {
               >
                 <Card className="bg-card border-gold/20 shadow-gold">
                   <CardHeader>
-                    <h2 className="flex items-center gap-2 text-gold">
+                    <h2 className="flex items-center gap-2 text-gold text-2xl font-semibold leading-none tracking-tight">
                       <Plus className="w-5 h-5" />
                       Novo Agendamento
                     </h2>
