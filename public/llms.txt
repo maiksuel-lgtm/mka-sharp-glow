@@ -1,0 +1,11 @@
+# MkA Cortes
+
+> Barbearia premium com agendamento online, cortes de cabelo, barba e planos de assinatura mensal.
+
+MkA Cortes oferece serviços de barbearia com atendimento exclusivo e três planos de assinatura mensal:
+Básico (R$100 — corte), Padrão (R$150 — corte + barba) e Premium (R$165 — corte + barba + sobrancelha).
+
+## Pages
+
+- [Início](/): Agendamento de cortes, avaliações de clientes e planos de assinatura.
+- [Entrar / Criar Conta](/auth): Acesso ao perfil do cliente e escolha do plano de assinatura.

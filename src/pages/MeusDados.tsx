@@ -18,6 +18,7 @@ import { BackgroundEffects } from "@/components/BackgroundEffects";
 import { StarRating } from "@/components/StarRating";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Helmet } from "react-helmet-async";
 
 interface ClientData {
   name: string;
@@ -267,9 +268,15 @@ export default function MeusDados() {
 
   return (
     <div className="min-h-screen bg-background relative">
+      <Helmet>
+        <title>Meus Dados — MkA Cortes</title>
+        <meta name="description" content="Visualize e edite seu agendamento, avaliação e informações de perfil na MkA Cortes." />
+        <link rel="canonical" href="https://mka-cortes.lovable.app/meus-dados" />
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <BackgroundEffects />
       
-      <div className="relative z-10 container mx-auto px-4 py-8 md:py-12">
+      <main className="relative z-10 container mx-auto px-4 py-8 md:py-12">
         <div className="max-w-4xl mx-auto space-y-6">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -652,7 +659,7 @@ export default function MeusDados() {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

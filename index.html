@@ -1,20 +1,40 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MkA Cortes - Agendamento de Cortes Premium</title>
-    <meta name="description" content="Sistema de agendamento para MkA Cortes. Agende seu corte de forma rápida e fácil." />
+    <title>MkA Cortes — Barbearia Premium e Agendamento Online</title>
+    <meta name="description" content="Barbearia MkA Cortes: cortes premium, barba e planos de assinatura mensal. Agende seu horário online de forma rápida e fácil." />
     <meta name="author" content="MkA Cortes" />
 
-    <meta property="og:title" content="MkA Cortes - Agendamento de Cortes Premium" />
-    <meta property="og:description" content="Sistema de agendamento para MkA Cortes. Agende seu corte de forma rápida e fácil." />
+    <meta property="og:title" content="MkA Cortes — Barbearia Premium" />
+    <meta property="og:description" content="Cortes premium, barba e planos de assinatura mensal. Agende seu horário online." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:url" content="https://mka-cortes.lovable.app/" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:title" content="MkA Cortes — Barbearia Premium" />
+    <meta name="twitter:description" content="Cortes premium, barba e planos de assinatura mensal. Agende seu horário online." />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BarberShop",
+        "name": "MkA Cortes",
+        "description": "Barbearia premium com cortes de cabelo, barba e planos de assinatura mensal.",
+        "url": "https://mka-cortes.lovable.app/",
+        "priceRange": "R$100 - R$165",
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Planos de Assinatura",
+          "itemListElement": [
+            { "@type": "Offer", "name": "Plano Básico", "price": "100", "priceCurrency": "BRL", "itemOffered": { "@type": "Service", "name": "Corte de Cabelo" } },
+            { "@type": "Offer", "name": "Plano Padrão", "price": "150", "priceCurrency": "BRL", "itemOffered": { "@type": "Service", "name": "Corte de Cabelo + Barba" } },
+            { "@type": "Offer", "name": "Plano Premium", "price": "165", "priceCurrency": "BRL", "itemOffered": { "@type": "Service", "name": "Corte de Cabelo + Barba + Sobrancelha" } }
+          ]
+        }
+      }
+    </script>
   </head>
 
   <body>
