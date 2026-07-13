@@ -659,7 +659,7 @@ export default function MeusDados() {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
