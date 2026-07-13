@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -134,6 +135,13 @@ export default function ClientAuth() {
 
   return (
     <div className="min-h-screen bg-gradient-dark flex items-center justify-center p-4">
+      <Helmet>
+        <title>{isLogin ? 'Entrar' : 'Criar Conta'} — MkA Cortes</title>
+        <meta name="description" content={isLogin ? 'Acesse seu perfil na MkA Cortes para gerenciar agendamentos e assinatura.' : 'Crie sua conta na MkA Cortes e escolha um plano de assinatura mensal a partir de R$100.'} />
+        <link rel="canonical" href="https://mka-cortes.lovable.app/auth" />
+        <meta property="og:title" content={`${isLogin ? 'Entrar' : 'Criar Conta'} — MkA Cortes`} />
+        <meta property="og:url" content="https://mka-cortes.lovable.app/auth" />
+      </Helmet>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
